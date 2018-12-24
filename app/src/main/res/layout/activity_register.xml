@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".ui.RegisterActivity">
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/logo2"
@@ -13,7 +13,8 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="104dp"
         android:layout_marginEnd="8dp"
-        android:background="@drawable/igaslogo"
+        android:src="@drawable/igaslogo"
+        android:scaleType="centerCrop"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -28,7 +29,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:drawableStart="@drawable/person_black_24dp"
-        android:drawableLeft="@drawable/person_black_24dp"
+        android:drawablePadding="10dp"
         android:hint="@string/name"
         android:inputType="text"
         app:layout_constraintEnd_toEndOf="parent"
@@ -45,7 +46,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:drawableStart="@drawable/ic_email_black_24dp"
-        android:drawableLeft="@drawable/ic_email_black_24dp"
+        android:drawablePadding="10dp"
         android:hint="@string/email"
         android:inputType="textEmailAddress"
         app:layout_constraintEnd_toEndOf="parent"
@@ -63,8 +64,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:drawableStart="@drawable/lock_outline_black_24dp"
-        android:drawableLeft="@drawable/lock_outline_black_24dp"
-        android:drawablePadding="4dp"
+        android:drawablePadding="10dp"
         android:hint="@string/password"
         android:inputType="textPassword"
         app:layout_constraintEnd_toEndOf="parent"
@@ -91,35 +91,31 @@
         android:layout_width="325dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
         android:layout_marginBottom="8dp"
         android:text="@string/register"
         app:layout_constraintBottom_toTopOf="@+id/sign_in"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.652"
         app:layout_constraintStart_toStartOf="@+id/guideline"
         app:layout_constraintTop_toBottomOf="@+id/checkboxTerms"
-        app:layout_constraintVertical_bias="0.753" />
+        app:layout_constraintVertical_bias="0.0" />
 
 
     <TextView
         android:id="@+id/sign_in"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="28dp"
         android:text="@string/signIn"
         android:textAlignment="center"
         android:textColor="@color/colorAccent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        tools:layout_editor_absoluteX="110dp"
+        tools:layout_editor_absoluteY="448dp"
+        android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.513"
-        app:layout_constraintStart_toStartOf="@+id/guideline3" />
+        app:layout_constraintStart_toStartOf="@+id/guideline3"
+        app:layout_constraintTop_toBottomOf="@+id/btn_register" />
 
     <ProgressBar
         android:id="@+id/registering"

@@ -1,5 +1,7 @@
-package codegreed_devs.com.igasvendor;
+package codegreed_devs.com.igasvendor.ui;
 
+import android.content.Intent;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -9,7 +11,11 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+import codegreed_devs.com.igasvendor.R;
+import codegreed_devs.com.igasvendor.utils.Constants;
+
+public class RegisterActivity extends AppCompatActivity {
+
     ProgressBar registeringBusiness;
     EditText businessName, businessEmail, password;
     CheckBox termsAndCondiditions;
@@ -19,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_register);
 
         registeringBusiness = findViewById(R.id.registering);
         businessName = findViewById(R.id.business_name);
@@ -33,9 +39,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 registeringBusiness.setVisibility(View.VISIBLE);
-
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        registeringBusiness.setVisibility(View.GONE);
+                        startActivity(new Intent(getApplicationContext(), Home.class));
+                    }
+                }, Constants.SPLASH_TIME_OUT);
 
             }
         });
+
+        tvSignIn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+            }
+        });
+
+
     }
 }
