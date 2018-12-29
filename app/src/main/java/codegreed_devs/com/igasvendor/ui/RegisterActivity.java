@@ -63,6 +63,7 @@ public class RegisterActivity extends AppCompatActivity {
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
+
         mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
@@ -97,6 +98,7 @@ public class RegisterActivity extends AppCompatActivity {
                             registeringBusiness.setVisibility(View.GONE);
                             //redirect to home activity
                             startActivity(new Intent(RegisterActivity.this, LoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                            finish();
                         }
                     }
                 });

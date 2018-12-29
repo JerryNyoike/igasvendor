@@ -11,7 +11,11 @@ public class Constants {
     public static final String LOCATION_DATA_EXTRA = PACKAGE_NAME + ".LOCATION_DATA_EXTRA";
 
     public static final long SPLASH_TIME_OUT = 3000;
-    public static final String SHARED_PREF_NAME = BuildConfig.APPLICATION_ID + "SHARED_PREF";
+    public static final String SHARED_PREF_NAME = PACKAGE_NAME + "SHARED_PREF";
     public static final String SHARED_PREF_NAME_IS_FIRST_LOGIN = "IsFirstLogin";
-    public static final String SHARED_PREF_NAME_USERNAME = "FullNames";
+    public static final String SHARED_PREF_NAME_BUSINESS_NAME = "BusinessName";
+    public static final String SHARED_PREF_NAME_EMAIL = "Email";
+
+    public static final String SHARED_PREF_NAME_LOC_LAT = "LocationLatitude";
+    public static final String SHARED_PREF_NAME_LOC_LONG = "LocationLongitude";
 }

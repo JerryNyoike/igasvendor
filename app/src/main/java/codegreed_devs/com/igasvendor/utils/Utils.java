@@ -20,4 +20,11 @@ public class Utils {
         return context.getSharedPreferences(Constants.SHARED_PREF_NAME, Context.MODE_PRIVATE)
                 .getString(key, "");
     }
+
+    public static void clearSP(Context context) {
+        context.getSharedPreferences(Constants.SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .clear()
+                .apply();
+    }
 }
