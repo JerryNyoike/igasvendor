@@ -1,11 +1,10 @@
-package codegreed_devs.com.igasvendor.Models;
+package codegreed_devs.com.igasvendor.models;
 
 public class Vendor {
     private String uid;
     private String businessName;
     private String businessEmail;
     private String businessLocation;
-    private String servicesOffered;
 
     public Vendor(String uid, String name, String email, String location){
         this.uid = uid;
