@@ -1,48 +1,70 @@
 package codegreed_devs.com.igasvendor.ui;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import codegreed_devs.com.igasvendor.R;
-import codegreed_devs.com.igasvendor.utils.Constants;
 
 public class RegisterActivity extends AppCompatActivity {
 
+    private static final String TAG = "RegisterActivity";
     ProgressBar registeringBusiness;
     EditText etBusinessName, etBusinessEmail, etPassword;
     CheckBox termsAndCondiditions;
-    Button btnRegister;
+    Button btnRegister, btnLocation;
     TextView tvSignIn;
+    String businessName, businessEmail, password;
+    Location businesslocation;
     FirebaseAuth mAuth;
-    private FusedLocationProviderClient mFusedLocationClient;
-
+    FusedLocationProviderClient mFusedLocationClient;
+    DatabaseReference mDatabaseReference;
+    private LocationCallback mLocationCallback;
+    private LocationRequest mLocationRequest;
+    GeoFire geoFire;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
         mAuth = FirebaseAuth.getInstance();
+        mDatabaseReference = FirebaseDatabase.getInstance().getReference();
 
         registeringBusiness = findViewById(R.id.registering);
         etBusinessName = findViewById(R.id.business_name);
@@ -50,28 +72,29 @@ public class RegisterActivity extends AppCompatActivity {
         etPassword = findViewById(R.id.reg_password);
         termsAndCondiditions = findViewById(R.id.checkboxTerms);
         btnRegister = findViewById(R.id.btn_register);
+        btnLocation = findViewById(R.id.fetch_location);
         tvSignIn = findViewById(R.id.sign_in);
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-
-        mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+        mLocationCallback = new LocationCallback() {
             @Override
-            public void onSuccess(Location location) {
-                // Got last known location. In some rare situations this can be null.
-                if (location != null) {
-                    // Logic to handle location object
+            public void onLocationResult(LocationResult locationResult) {
+                super.onLocationResult(locationResult);
+                if (locationResult == null) {
+                    return;
                 }
+                for (Location location : locationResult.getLocations()) {
+                    businesslocation = location;
+                    break;
+                }
+                mFusedLocationClient.removeLocationUpdates(mLocationCallback);
+            }
+        };
 
+        btnLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                registeringBusiness.setVisibility(View.VISIBLE);
+                getBusinessLocation();
             }
         });
 
@@ -79,36 +102,50 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 registeringBusiness.setVisibility(View.VISIBLE);
-                String businessName = etBusinessName.getText().toString().trim();
-                String businessEmail = etBusinessEmail.getText().toString().trim();
-                String password = etPassword.getText().toString().trim();
 
-                if(businessEmail.isEmpty() || businessEmail.equals("")){
-                    etBusinessEmail.setError("Enter a business email");
-                } else if (businessName.isEmpty()){
-                    etBusinessName.setError("Enter a business name");
-                } else if ( password.isEmpty() ){
-                    etPassword.setError("Enter etPassword");
+                getBusinessDetails();
+
+                if (validateUserData()) {
+                    btnRegister.setClickable(false);
+                    btnLocation.setClickable(false);
+                    mAuth.createUserWithEmailAndPassword(businessEmail, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (task.isSuccessful()) {
+                                //write user to the database
+                                final FirebaseUser user = mAuth.getCurrentUser();
+
+                                Map<String, String> data = new HashMap<String, String>();
+
+                                data.put("business_name", businessName);
+                                data.put("business_email", businessEmail);
+
+                                assert user != null;
+                                mDatabaseReference.child("vendors").child(user.getUid()).setValue(data).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful()){
+                                            geoFire = new GeoFire(mDatabaseReference.child("vendors").child(user.getUid()));
+                                            geoFire.setLocation("business_location", new GeoLocation(businesslocation.getLatitude(), businesslocation.getLongitude()), new GeoFire.CompletionListener() {
+                                                @Override
+                                                public void onComplete(String key, DatabaseError error) {
+                                                    registeringBusiness.setVisibility(View.GONE);
+                                                    startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
+                            } else {
+                                registeringBusiness.setVisibility(View.GONE);
+                                Toast.makeText(RegisterActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
+                            }
+
+                            startActivity(new Intent(RegisterActivity.this, LoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                        }
+                    });
                 }
 
-                mAuth.createUserWithEmailAndPassword(businessEmail, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if(task.isSuccessful()){
-                            registeringBusiness.setVisibility(View.GONE);
-                            //redirect to home activity
-                            startActivity(new Intent(RegisterActivity.this, LoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK));
-                            finish();
-                        }
-                    }
-                });
-//                new Handler().postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        registeringBusiness.setVisibility(View.GONE);
-//                        startActivity(new Intent(getApplicationContext(), Home.class));
-//                    }
-//                }, Constants.SPLASH_TIME_OUT);
 
             }
         });
@@ -122,4 +159,70 @@ public class RegisterActivity extends AppCompatActivity {
 
 
     }
+
+    private boolean validateUserData() {
+
+        if (businessName.isEmpty()) {
+            etBusinessName.setError("Enter a business name");
+            registeringBusiness.setVisibility(View.GONE);
+            return false;
+        } else if (businessEmail.isEmpty()) {
+            etBusinessEmail.setError("Enter a business email");
+            registeringBusiness.setVisibility(View.GONE);
+            return false;
+        } else if (password.length() < 6) {
+            etPassword.setError("Password must be more than 6 characters!");
+            registeringBusiness.setVisibility(View.GONE);
+            return false;
+        }
+        return true;
+    }
+
+    private void getBusinessDetails() {
+        businessName = etBusinessName.getText().toString().trim();
+        businessEmail = etBusinessEmail.getText().toString().trim();
+        password = etPassword.getText().toString().trim();
+    }
+
+    private void getBusinessLocation() {
+        Log.e(TAG, "Location button pressed");
+        //take the users location
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(RegisterActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+
+            return;
+        }
+
+        mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                registeringBusiness.setVisibility(View.GONE);
+                // Got last known location. In some rare situations this can be null.
+                if (location != null) {
+                    // Logic to handle location object
+                    businesslocation = location;
+                    Log.e(TAG, location.toString());
+                } else {
+                    //request location
+                    if (ActivityCompat.checkSelfPermission(RegisterActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(RegisterActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(RegisterActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+
+                        return;
+                    }
+                    mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            getBusinessLocation();
+        } else {
+            Toast.makeText(this, "Allow app to have location permissions", Toast.LENGTH_LONG).show();
+        }
+    }
 }
+
