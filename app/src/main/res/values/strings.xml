@@ -6,4 +6,12 @@
     <string name="email">Email</string>
     <string name="register">Register</string>
     <string name="signIn">Already have an account? Sign in</string>
+    <string name="login">Login</string>
+    <string name="don_t_have_an_account">Don\'t have an account?Sign Up</string>
+    <string name="gas_brand">Gas Brand</string>
+    <string name="gas_details">Gas Details</string>
+    <string name="view_order">View Order</string>
+    <string name="history">History</string>
+    <string name="log_out">Log Out</string>
+    <string name="exit">Exit</string>
 </resources>
