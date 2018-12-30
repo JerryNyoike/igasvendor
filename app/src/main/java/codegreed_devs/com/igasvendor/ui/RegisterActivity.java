@@ -42,20 +42,16 @@ import codegreed_devs.com.igasvendor.R;
 import codegreed_devs.com.igasvendor.services.FetchAddressIntentService;
 import codegreed_devs.com.igasvendor.utils.Constants;
 
-public class RegisterActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class RegisterActivity extends AppCompatActivity {
 
     private static final String TAG = "RegisterActivity";
     ProgressBar registeringBusiness;
     EditText etBusinessName, etBusinessEmail, etPassword;
     CheckBox termsAndCondiditions;
-    Button btnRegister, btnLocation;
+    Button btnRegister;
     TextView tvSignIn;
     String businessName, businessEmail, password;
     FirebaseAuth mAuth;
-    protected Location businessLocation;
-    FusedLocationProviderClient mFusedLocationClient;
-    DatabaseReference mDatabaseReference;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -165,40 +161,15 @@ public class RegisterActivity extends AppCompatActivity implements GoogleApiClie
 
             return;
         }
+
         mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
                 // Got last known location. In some rare situations this can be null.
                 if (location != null) {
-                    businessLocation = location;
-
-                    if (businessLocation == null) {
-                        Log.e(TAG, "Location is null");
-                        return;
-                    }
-
-                    if (!Geocoder.isPresent()) {
-                        Log.e(TAG, "No Geocoder present");
-                        return;
-                    }
-                    Log.e(TAG, businessLocation.toString());
-                }
-            }
         });
     }
 
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
 

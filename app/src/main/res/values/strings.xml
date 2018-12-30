@@ -8,9 +8,4 @@
     <string name="signIn">Already have an account? Sign in</string>
     <string name="login">Login</string>
     <string name="don_t_have_an_account">Don\'t have an account?Sign Up</string>
-    <string name="address_found">Found an address </string>
-    <string name="no_address_found">No addresses</string>
-    <string name="invalid_lat_long_used">Invalid latitude longitude pair</string>
-    <string name="service_not_availbale">Service not available</string>
-    <string name="get_business_location">Get business location</string>
 </resources>
