@@ -1,6 +1,7 @@
 package codegreed_devs.com.igasvendor.ui;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -17,6 +18,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -27,8 +30,13 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import codegreed_devs.com.igasvendor.R;
 
@@ -47,6 +55,7 @@ public class RegisterActivity extends AppCompatActivity {
     DatabaseReference mDatabaseReference;
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest;
+    GeoFire geoFire;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,9 +112,30 @@ public class RegisterActivity extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if (task.isSuccessful()) {
-                                registeringBusiness.setVisibility(View.GONE);
                                 //write user to the database
+                                final FirebaseUser user = mAuth.getCurrentUser();
 
+                                Map<String, String> data = new HashMap<String, String>();
+
+                                data.put("business_name", businessName);
+                                data.put("business_email", businessEmail);
+
+                                assert user != null;
+                                mDatabaseReference.child("vendors").child(user.getUid()).setValue(data).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        if (task.isSuccessful()){
+                                            geoFire = new GeoFire(mDatabaseReference.child("vendors").child(user.getUid()));
+                                            geoFire.setLocation("business_location", new GeoLocation(businesslocation.getLatitude(), businesslocation.getLongitude()), new GeoFire.CompletionListener() {
+                                                @Override
+                                                public void onComplete(String key, DatabaseError error) {
+                                                    registeringBusiness.setVisibility(View.GONE);
+                                                    startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                                                }
+                                            });
+                                        }
+                                    }
+                                });
                             } else {
                                 registeringBusiness.setVisibility(View.GONE);
                                 Toast.makeText(RegisterActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
@@ -170,6 +200,7 @@ public class RegisterActivity extends AppCompatActivity {
                 // Got last known location. In some rare situations this can be null.
                 if (location != null) {
                     // Logic to handle location object
+                    businesslocation = location;
                     Log.e(TAG, location.toString());
                 } else {
                     //request location
