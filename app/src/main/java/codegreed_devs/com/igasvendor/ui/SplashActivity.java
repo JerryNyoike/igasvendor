@@ -31,14 +31,15 @@ public class SplashActivity extends AppCompatActivity {
 
         if (Utils.isFirstLogin(getApplicationContext()))
         {
-            intent = new Intent(getApplicationContext(), LoginActivity.class);
+            intent = new Intent(getApplicationContext(), LoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         }
         else
         {
-            intent = new Intent(getApplicationContext(), Home.class);
+            intent = new Intent(getApplicationContext(), Home.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         }
 
         startActivity(intent);
+        finish();
 
     }
 }

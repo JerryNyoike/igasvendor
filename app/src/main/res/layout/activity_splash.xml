@@ -13,9 +13,9 @@
         android:orientation="vertical"
         android:gravity="center">
 
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:src="@drawable/igaslogo"
             android:layout_gravity="center"/>
 

@@ -14,4 +14,20 @@
     <string name="history">History</string>
     <string name="log_out">Log out</string>
     <string name="exit">Exit</string>
+    <string name="accept_order">Accept Order</string>
+    <string name="confirm_payment">Confirm Payment</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="payment_confirmation">Payment Confirmation</string>
+    <string name="business_details">Business Details</string>
+    <string name="set_your_prices">Set your prices</string>
+    <string name="_6_kg_price">6 Kg price :</string>
+    <string name="_6_kg_with_cylinder">6 Kg with cylinder :</string>
+    <string name="_13_kg_price">13 Kg price :</string>
+    <string name="_13_kg_with_cylinder">13 Kg with cylinder :</string>
+    <string name="update">Update</string>
+    <string name="detail">Detail</string>
+    <string name="no_orders">There are no orders within 1.5 kilometers of your location. Check back later</string>
+    <string name="no_orders_to_display">No orders to display</string>
+    <string name="order">Order</string>
+    <string name="click_to_change_address">Click the button below to change address</string>
 </resources>

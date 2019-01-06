@@ -22,9 +22,9 @@
         <activity android:name=".ui.RegisterActivity" />
         <activity android:name=".ui.LoginActivity" />
         <activity android:name=".ui.Home" />
-
         <activity android:name=".ui.History" />
-        <activity android:name=".ui.ViewOrder"></activity>
+        <activity android:name=".ui.ViewOrder"/>
+        <activity android:name=".ui.EditProfile"/>
     </application>
 
 </manifest>

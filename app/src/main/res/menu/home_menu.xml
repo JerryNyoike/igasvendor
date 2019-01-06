@@ -8,6 +8,11 @@
         app:showAsAction="never"/>
 
     <item
+        android:id="@+id/edit_profile"
+        android:title="@string/edit_profile"
+        app:showAsAction="never"/>
+
+    <item
         android:id="@+id/log_out"
         android:title="@string/log_out"
         app:showAsAction="never"/>

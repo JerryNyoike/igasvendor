@@ -1,14 +1,13 @@
 package codegreed_devs.com.igasvendor.ui;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -39,29 +38,37 @@ import java.util.HashMap;
 import java.util.Map;
 
 import codegreed_devs.com.igasvendor.R;
+import codegreed_devs.com.igasvendor.utils.Constants;
+import codegreed_devs.com.igasvendor.utils.Utils;
 
 public class RegisterActivity extends AppCompatActivity {
 
     private static final String TAG = "RegisterActivity";
-    ProgressBar registeringBusiness;
-    EditText etBusinessName, etBusinessEmail, etPassword;
-    CheckBox termsAndCondiditions;
-    Button btnRegister, btnLocation;
-    TextView tvSignIn;
-    String businessName, businessEmail, password;
-    Location businesslocation;
-    FirebaseAuth mAuth;
-    FusedLocationProviderClient mFusedLocationClient;
-    DatabaseReference mDatabaseReference;
+    private ProgressBar registeringBusiness;
+    private EditText etBusinessName, etBusinessEmail, etPassword, etSixKgPrice, etThirteenKgPrice, etSixKgWithCylinderPrice, etThirteenKgWithCylinderPrice;
+    private CheckBox termsAndCondiditions;
+    private Button btnRegister, btnLocation;
+    private TextView tvSignIn;
+    private String businessName, businessEmail, password, sixKgPrice, sixKgWithCylinderPrice, thirteenKgPrice, thirteenKgWithCylinderPrice;
+    private Location businesslocation;
+    private FirebaseAuth mAuth;
+    private FusedLocationProviderClient mFusedLocationClient;
+    private DatabaseReference mDatabaseReference;
     private LocationCallback mLocationCallback;
     private LocationRequest mLocationRequest;
     GeoFire geoFire;
+    private String businessAddress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        mLocationRequest = new LocationRequest();
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(Constants.A_MINUTE);
+        mLocationRequest.setFastestInterval(Constants.A_MINUTE);
 
         mAuth = FirebaseAuth.getInstance();
         mDatabaseReference = FirebaseDatabase.getInstance().getReference();
@@ -70,6 +77,10 @@ public class RegisterActivity extends AppCompatActivity {
         etBusinessName = findViewById(R.id.business_name);
         etBusinessEmail = findViewById(R.id.email);
         etPassword = findViewById(R.id.reg_password);
+        etSixKgPrice = findViewById(R.id.six_kg_price);
+        etSixKgWithCylinderPrice = findViewById(R.id.complete_six_kg_price);
+        etThirteenKgPrice = findViewById(R.id.thirteen_kg_price);
+        etThirteenKgWithCylinderPrice = findViewById(R.id.complete_thirteen_kg_price);
         termsAndCondiditions = findViewById(R.id.checkboxTerms);
         btnRegister = findViewById(R.id.btn_register);
         btnLocation = findViewById(R.id.fetch_location);
@@ -84,6 +95,7 @@ public class RegisterActivity extends AppCompatActivity {
                 }
                 for (Location location : locationResult.getLocations()) {
                     businesslocation = location;
+                    businessAddress = Utils.getAddressFromLocation(getApplicationContext(), location.getLatitude(), location.getLongitude());
                     break;
                 }
                 mFusedLocationClient.removeLocationUpdates(mLocationCallback);
@@ -95,12 +107,13 @@ public class RegisterActivity extends AppCompatActivity {
             public void onClick(View v) {
                 registeringBusiness.setVisibility(View.VISIBLE);
                 getBusinessLocation();
+                //save to shared preferences
             }
         });
 
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(final View v) {
                 registeringBusiness.setVisibility(View.VISIBLE);
 
                 getBusinessDetails();
@@ -115,13 +128,23 @@ public class RegisterActivity extends AppCompatActivity {
                                 //write user to the database
                                 final FirebaseUser user = mAuth.getCurrentUser();
 
-                                Map<String, String> data = new HashMap<String, String>();
-
-                                data.put("business_name", businessName);
-                                data.put("business_email", businessEmail);
-
                                 assert user != null;
-                                mDatabaseReference.child("vendors").child(user.getUid()).setValue(data).addOnCompleteListener(new OnCompleteListener<Void>() {
+
+                                Map<String, String> generalDetails = new HashMap<String, String>();
+                                Map<String, String> priceDetails = new HashMap<String, String>();
+
+                                generalDetails.put("id", user.getUid());
+                                generalDetails.put("business_name", businessName);
+                                generalDetails.put("business_email", businessEmail);
+                                if (businessAddress != null)
+                                    generalDetails.put("business_address", businessAddress);
+
+                                priceDetails.put("six_kg", sixKgPrice);
+                                priceDetails.put("complete_six_kg", sixKgWithCylinderPrice);
+                                priceDetails.put("thirteen_kg", thirteenKgPrice);
+                                priceDetails.put("complete_thirteen_kg", thirteenKgWithCylinderPrice);
+
+                                mDatabaseReference.child("vendors").child(user.getUid()).setValue(generalDetails).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if (task.isSuccessful()){
@@ -136,6 +159,14 @@ public class RegisterActivity extends AppCompatActivity {
                                         }
                                     }
                                 });
+
+                                mDatabaseReference.child("vendors").child(user.getUid()).child("business_prices").setValue(priceDetails).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+
+                                    }
+                                });
+
                             } else {
                                 registeringBusiness.setVisibility(View.GONE);
                                 Toast.makeText(RegisterActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
@@ -153,7 +184,7 @@ public class RegisterActivity extends AppCompatActivity {
         tvSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+                startActivity(new Intent(getApplicationContext(), LoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK));
             }
         });
 
@@ -174,6 +205,14 @@ public class RegisterActivity extends AppCompatActivity {
             etPassword.setError("Password must be more than 6 characters!");
             registeringBusiness.setVisibility(View.GONE);
             return false;
+        } else if(sixKgPrice.isEmpty()){
+            etSixKgPrice.setError("Please enter a price for this product");
+        } else if(sixKgWithCylinderPrice.isEmpty()){
+            etSixKgWithCylinderPrice.setError("Please enter a price for this product");
+        } else if(thirteenKgPrice.isEmpty()){
+            etThirteenKgPrice.setError("Please enter a price for this product");
+        } else if(thirteenKgWithCylinderPrice.isEmpty()){
+            etThirteenKgWithCylinderPrice.setError("Please enter a price for this product");
         }
         return true;
     }
@@ -182,13 +221,17 @@ public class RegisterActivity extends AppCompatActivity {
         businessName = etBusinessName.getText().toString().trim();
         businessEmail = etBusinessEmail.getText().toString().trim();
         password = etPassword.getText().toString().trim();
+        sixKgPrice = etSixKgPrice.getText().toString().trim();
+        sixKgWithCylinderPrice = etSixKgWithCylinderPrice.getText().toString().trim();
+        thirteenKgPrice = etThirteenKgPrice.getText().toString().trim();
+        thirteenKgWithCylinderPrice = etThirteenKgWithCylinderPrice.getText().toString().trim();
     }
 
     private void getBusinessLocation() {
         Log.e(TAG, "Location button pressed");
         //take the users location
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(RegisterActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+            ActivityCompat.requestPermissions(RegisterActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, Constants.LOCATION_PERMISSIONS_REQUEST_CODE);
 
             return;
         }
@@ -201,12 +244,13 @@ public class RegisterActivity extends AppCompatActivity {
                 if (location != null) {
                     // Logic to handle location object
                     businesslocation = location;
+                    businessAddress = Utils.getAddressFromLocation(getApplicationContext(), location.getLatitude(), location.getLongitude());
+                    btnLocation.setText("Current Address: " + businessAddress);
                     Log.e(TAG, location.toString());
                 } else {
                     //request location
                     if (ActivityCompat.checkSelfPermission(RegisterActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(RegisterActivity.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions(RegisterActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
-
                         return;
                     }
                     mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, null);
@@ -218,7 +262,7 @@ public class RegisterActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+        if(requestCode == Constants.LOCATION_PERMISSIONS_REQUEST_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED){
             getBusinessLocation();
         } else {
             Toast.makeText(this, "Allow app to have location permissions", Toast.LENGTH_LONG).show();
