@@ -1,5 +1,6 @@
 package codegreed_devs.com.igasvendor.ui;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,13 +10,17 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
@@ -37,12 +42,13 @@ import codegreed_devs.com.igasvendor.utils.Utils;
 
 public class Home extends AppCompatActivity {
 
-    private ArrayList<String> viableOrderIDs;
-    private ArrayList<OrderModel> viableOrders;
+    private TextView onlineStatus;
+    private ArrayList<OrderModel> pendingOrders;
     private OrdersAdapter ordersAdapter;
     private DatabaseReference rootDBRef;
     private GeoFire geoFire;
-    private float [] results;
+    private String vendorId;
+    private ProgressDialog loadAction;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,116 +59,106 @@ public class Home extends AppCompatActivity {
         Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //get data from shared preference
+        vendorId = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_ID);
+
         //initialize views
+        final SwitchCompat switchCompat = findViewById(R.id.toggle_online_status);
+        onlineStatus = findViewById(R.id.online_status);
         ListView ordersList = findViewById(android.R.id.list);
         TextView emptyListView = findViewById(android.R.id.empty);
-
-        //get shared preference values
-        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(Constants.SHARED_PREF_NAME, Context.MODE_PRIVATE);
-        final float vendorLatitude = sharedPref.getFloat(Constants.SHARED_PREF_NAME_LOC_LAT, 0);
-        final float vendorLongitude = sharedPref.getFloat(Constants.SHARED_PREF_NAME_LOC_LONG, 0);
+        loadAction = new ProgressDialog(this);
 
         //initialize firebase variables
         rootDBRef = FirebaseDatabase.getInstance().getReference();
-        geoFire = new GeoFire(rootDBRef.child("clientRequests"));
+        geoFire = new GeoFire(rootDBRef.child("Available Vendors"));
 
         //initialize other variables
-        viableOrderIDs = new ArrayList<String>();
-        viableOrders = new ArrayList<OrderModel>();
-        ordersAdapter = new OrdersAdapter(getApplicationContext(), viableOrders);
+        pendingOrders = new ArrayList<OrderModel>();
+        ordersAdapter = new OrdersAdapter(getApplicationContext(), pendingOrders);
 
         //method calls
-        getViableOrders(vendorLatitude, vendorLongitude);
-        getViableOrderDetails(viableOrderIDs);
+        getPendingOrderDetails();
 
         //update ui
         ordersList.setAdapter(ordersAdapter);
         ordersList.setEmptyView(emptyListView);
+
+        if (Utils.getPrefBoolean(getApplicationContext(), Constants.SHARED_PREF_NAME_IS_ONLINE))
+        {
+            switchCompat.setChecked(true);
+            onlineStatus.setText(getResources().getString(R.string.online));
+        }
 
         //handle item clicks
         ordersList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent viewOrder = new Intent(Home.this, ViewOrder.class);
-                viewOrder.putExtra("order_id", viableOrders.get(position).getOrderId());
-                viewOrder.putExtra("gas_brand", viableOrders.get(position).getGasBrand());
+                viewOrder.putExtra("client_id", pendingOrders.get(position).getClientId());
+                viewOrder.putExtra("order_id", pendingOrders.get(position).getOrderId());
                 startActivity(viewOrder);
             }
         });
 
+        switchCompat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (isChecked)
+                {
+                    toggleOnlineStatus(false);
+                }
+                else
+                {
+                    toggleOnlineStatus(true);
+                }
+            }
+        });
+
     }
 
-    private void getViableOrders(final float latitude, final float longitude){
-        rootDBRef.child("clientRequests").addValueEventListener(new ValueEventListener() {
+    //fetch all details in the db for the vendor
+    private void getPendingOrderDetails(){
+
+        loadAction.setMessage("Getting orders...");
+        loadAction.show();
+
+        rootDBRef.child("Order Details").child(vendorId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                viableOrderIDs.clear();
+                pendingOrders.clear();
 
-                for(DataSnapshot ds : dataSnapshot.getChildren()){
-                    final String requestID = ds.getKey();
-                    geoFire.getLocation(requestID, new LocationCallback() {
-                        @Override
-                        public void onLocationResult(String key, GeoLocation location) {
+                for (DataSnapshot ds : dataSnapshot.getChildren())
+                {
+                    String orderStatus = ds.child("orderStatus").getValue(String.class);
 
-                            //add the order IDs to arraylist for later processing if
-                            // the difference in distance is less than 15 kilometers
-                            Location.distanceBetween(location.latitude, location.longitude, latitude, longitude, results);
+                    if(orderStatus != null && (orderStatus.equals("waiting") || orderStatus.equals("accepted")))
+                    {
+                        pendingOrders.add(new OrderModel(ds.child("orderId").getValue(String.class),
+                                ds.child("clientId").getValue(String.class),
+                                ds.child("vendorId").getValue(String.class),
+                                ds.child("gasBrand").getValue(String.class),
+                                ds.child("gasSize").getValue(String.class),
+                                ds.child("gasType").getValue(String.class),
+                                ds.child("price").getValue(String.class),
+                                ds.child("mnumberOfCylinders").getValue(String.class),
+                                ds.child("orderStatus").getValue(String.class)));
+                    }
 
-                            if (results[0] <= 1.5){
-                                viableOrderIDs.add(requestID);
-                            }
-
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
                 }
+
+                ordersAdapter.notifyDataSetChanged();
+                loadAction.dismiss();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
+                loadAction.dismiss();
+                Log.e("DATABASE ERROR", databaseError.getMessage());
+                Toast.makeText(Home.this, "Couldn't get orders", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private void getViableOrderDetails(ArrayList<String> orderIDs){
-        for(String orderID : orderIDs){
-            //fetch all details in the db for the request
-            rootDBRef.child("Order Details").child(orderID).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                    viableOrders.clear();
-
-                    for (DataSnapshot ds : dataSnapshot.getChildren()){
-                        String orderStatus = ds.child("orderStatus").getValue(String.class);
-                        if(orderStatus != null && orderStatus.equals("pending")){
-                            viableOrders.add(new OrderModel(ds.child("orderId").getValue(String.class),
-                                    ds.child("clientId").getValue(String.class),
-                                    ds.getKey(),
-                                    ds.child("gasBrand").getValue(String.class),
-                                    ds.child("gasSize").getValue(String.class),
-                                    ds.child("gasType").getValue(String.class),
-                                    ds.child("price").getValue(String.class),
-                                    ds.child("mnumberOfCylinders").getValue(String.class),
-                                    ds.child("orderStatus").getValue(String.class)));
-                        }
-                    }
-
-                    ordersAdapter.notifyDataSetChanged();
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
-        }
     }
 
     @Override
@@ -194,6 +190,53 @@ public class Home extends AppCompatActivity {
         }
         
         return true;
+    }
+
+    //change vendor's online status
+    private void toggleOnlineStatus(boolean isOnline){
+
+        double latitude = (double) Utils.getPrefFloat(getApplicationContext(), Constants.SHARED_PREF_NAME_LOC_LAT);
+        double longitude = (double) Utils.getPrefFloat(getApplicationContext(), Constants.SHARED_PREF_NAME_LOC_LONG);
+
+        if (!isOnline)
+        {
+            geoFire.setLocation(vendorId, new GeoLocation(latitude, longitude), new GeoFire.CompletionListener() {
+                @Override
+                public void onComplete(String key, DatabaseError error) {
+                    if (error != null)
+                    {
+                        Toast.makeText(Home.this, "Something went wrong.Check connection!", Toast.LENGTH_SHORT).show();
+                        Log.e("GEOFIRE ERROR", error.getMessage());
+                    }
+                    else
+                    {
+                        Utils.setPrefBoolean(getApplicationContext(), Constants.SHARED_PREF_NAME_IS_ONLINE, true);
+                        onlineStatus.setText(getResources().getString(R.string.online));
+                        Toast.makeText(Home.this, "You are online!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+        else
+        {
+            geoFire.removeLocation(vendorId, new GeoFire.CompletionListener() {
+                @Override
+                public void onComplete(String key, DatabaseError error) {
+                    if (error != null)
+                    {
+                        Toast.makeText(Home.this, "Something went wrong.Check connection!", Toast.LENGTH_SHORT).show();
+                        Log.e("GEOFIRE ERROR", error.getMessage());
+                    }
+                    else
+                    {
+                        Utils.setPrefBoolean(getApplicationContext(), Constants.SHARED_PREF_NAME_IS_ONLINE, false);
+                        onlineStatus.setText(getResources().getString(R.string.offline));
+                        Toast.makeText(Home.this, "You are offline!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+
     }
 
     //log out user

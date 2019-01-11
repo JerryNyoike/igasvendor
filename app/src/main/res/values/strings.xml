@@ -26,8 +26,11 @@
     <string name="_13_kg_with_cylinder">13 Kg with cylinder :</string>
     <string name="update">Update</string>
     <string name="detail">Detail</string>
-    <string name="no_orders">There are no orders within 1.5 kilometers of your location. Check back later</string>
-    <string name="no_orders_to_display">No orders to display</string>
+    <string name="no_orders">There are no orders for you.\nCheck back later</string>
+    <string name="no_orders_to_display">No orders to display\n(Finished orders appear here)</string>
     <string name="order">Order</string>
     <string name="click_to_change_address">Click the button below to change address</string>
+    <string name="online_status">Online status</string>
+    <string name="online">Online</string>
+    <string name="offline">Offline</string>
 </resources>

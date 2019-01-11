@@ -27,19 +27,19 @@ public class SplashActivity extends AppCompatActivity {
 
     private void updateUI() {
 
-        Intent intent = null;
+        Intent login = new Intent(getApplicationContext(), LoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        Intent home = new Intent(getApplicationContext(), Home.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
         if (Utils.isFirstLogin(getApplicationContext()))
         {
-            intent = new Intent(getApplicationContext(), LoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(login);
+            finish();
         }
         else
         {
-            intent = new Intent(getApplicationContext(), Home.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(home);
+            finish();
         }
-
-        startActivity(intent);
-        finish();
 
     }
 }

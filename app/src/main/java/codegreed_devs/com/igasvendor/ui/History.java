@@ -32,11 +32,15 @@ public class History extends AppCompatActivity {
     private ArrayList<OrderModel> orders;
     private DatabaseReference rootRef;
     private ProgressDialog loadOrders;
+    private String vendorId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
+
+        //get data from shared preference
+        vendorId = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_ID);
 
         //set up toolbar
         Toolbar toolbar = (Toolbar)findViewById(R.id.toolbar);
@@ -80,7 +84,7 @@ public class History extends AppCompatActivity {
         loadOrders.setCancelable(false);
         loadOrders.show();
 
-        rootRef.child("Order Details").addValueEventListener(new ValueEventListener() {
+        rootRef.child("Order Details").child(vendorId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
@@ -88,9 +92,9 @@ public class History extends AppCompatActivity {
 
                 for (DataSnapshot ds : dataSnapshot.getChildren())
                 {
-                    String vendorId = ds.child("vendorId").getValue(String.class);
+                    String orderStatus = ds.child("orderStatus").getValue(String.class);
 
-                    if (vendorId != null && vendorId.equals(Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_ID)))
+                    if (orderStatus != null && orderStatus.equals("finished"))
                     {
                         orders.add(new OrderModel(ds.child("orderId").getValue(String.class),
                                 ds.child("clientId").getValue(String.class),

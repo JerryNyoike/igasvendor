@@ -15,6 +15,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
+import com.firebase.geofire.LocationCallback;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -37,6 +40,7 @@ public class LoginActivity extends AppCompatActivity {
     private ProgressBar loadLogin;
     private FirebaseAuth auth;
     private DatabaseReference rootRef;
+    private GeoFire geoFire;
     private String email, password;
 
     @Override
@@ -58,6 +62,7 @@ public class LoginActivity extends AppCompatActivity {
         //check if user is logged in
         if(auth.getCurrentUser() != null){
             startActivity(new Intent(LoginActivity.this, Home.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK));
+            finish();
         }
 
 
@@ -123,8 +128,15 @@ public class LoginActivity extends AppCompatActivity {
                     Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_NAME, business_name);
                     Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_EMAIL, business_email);
                     Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_ADDRESS, business_address);
+                    Utils.setPrefBoolean(getApplicationContext(), Constants.SHARED_PREF_NAME_IS_FIRST_LOGIN, false);
+
+                    String token = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_FCM_TOKEN);
+
+                    if (!token.equals(""))
+                        saveFCMTokenToDatabase(token, u_id);
 
                     loadLogin.setVisibility(View.GONE);
+                    Toast.makeText(LoginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(getApplicationContext(), Home.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
                     finish();
                 }
@@ -173,36 +185,50 @@ public class LoginActivity extends AppCompatActivity {
     //fetch vendor location
     private void getBusinessLocation(String u_id) {
 
-        rootRef.child("vendors").child(u_id).child("business_location").addValueEventListener(new ValueEventListener() {
+        geoFire = new GeoFire(rootRef.child("vendors").child(u_id));
+        geoFire.getLocation("business_location", new LocationCallback() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                String business_g = dataSnapshot
-                        .child("g")
-                        .getValue(String.class);
-
-                float latitude = dataSnapshot
-                        .child("l")
-                        .child("0")
-                        .getValue(Float.class);
-
-                float longitude = dataSnapshot
-                        .child("l")
-                        .child("1")
-                        .getValue(Float.class);
-
-                if (latitude != 0)
+            public void onLocationResult(String key, GeoLocation location) {
+                if (location != null)
                 {
-                    Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_LOC_G, business_g);
-                    Utils.setPrefFloat(getApplicationContext(), Constants.SHARED_PREF_NAME_LOC_LAT, latitude);
-                    Utils.setPrefFloat(getApplicationContext(), Constants.SHARED_PREF_NAME_LOC_LONG, longitude);
-                }
+                    float latitude = (float) location.latitude;
 
+                    float longitude = (float) location.longitude;
+
+                    if (latitude != 0)
+                    {
+                        Utils.setPrefFloat(getApplicationContext(), Constants.SHARED_PREF_NAME_LOC_LAT, latitude);
+                        Utils.setPrefFloat(getApplicationContext(), Constants.SHARED_PREF_NAME_LOC_LONG, longitude);
+                    }
+                }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+            public void onCancelled(DatabaseError databaseError) {
 
+            }
+        });
+
+
+    }
+
+    //save token to database and shared preference
+    private void saveFCMTokenToDatabase(String token, String vendorId) {
+
+        Log.e("FCM TOKEN", token);
+
+        rootRef.child("vendors").child(vendorId).child("fcm_token").setValue(token).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (!task.isSuccessful())
+                {
+
+                }
+                else
+                {
+                    if (task.getException() != null)
+                        Log.e("FCM ERROR", task.getException().getMessage());
+                }
             }
         });
 

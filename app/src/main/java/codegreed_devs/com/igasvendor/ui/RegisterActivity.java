@@ -119,6 +119,7 @@ public class RegisterActivity extends AppCompatActivity {
                 getBusinessDetails();
 
                 if (validateUserData()) {
+
                     btnRegister.setClickable(false);
                     btnLocation.setClickable(false);
                     mAuth.createUserWithEmailAndPassword(businessEmail, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -131,18 +132,14 @@ public class RegisterActivity extends AppCompatActivity {
                                 assert user != null;
 
                                 Map<String, String> generalDetails = new HashMap<String, String>();
-                                Map<String, String> priceDetails = new HashMap<String, String>();
 
-                                generalDetails.put("id", user.getUid());
+
+                                generalDetails.put("business_id", user.getUid());
                                 generalDetails.put("business_name", businessName);
                                 generalDetails.put("business_email", businessEmail);
+
                                 if (businessAddress != null)
                                     generalDetails.put("business_address", businessAddress);
-
-                                priceDetails.put("six_kg", sixKgPrice);
-                                priceDetails.put("complete_six_kg", sixKgWithCylinderPrice);
-                                priceDetails.put("thirteen_kg", thirteenKgPrice);
-                                priceDetails.put("complete_thirteen_kg", thirteenKgWithCylinderPrice);
 
                                 mDatabaseReference.child("vendors").child(user.getUid()).setValue(generalDetails).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
@@ -152,18 +149,36 @@ public class RegisterActivity extends AppCompatActivity {
                                             geoFire.setLocation("business_location", new GeoLocation(businesslocation.getLatitude(), businesslocation.getLongitude()), new GeoFire.CompletionListener() {
                                                 @Override
                                                 public void onComplete(String key, DatabaseError error) {
-                                                    registeringBusiness.setVisibility(View.GONE);
-                                                    startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                                                    if (error != null)
+                                                        Log.e("GEOFIRE ERROR", error.getMessage());
                                                 }
                                             });
+                                        } else if (task.getException() != null){
+                                            Log.e("DATABASE ERROR", task.getException().getMessage());
                                         }
                                     }
                                 });
 
+                                Map<String, String> priceDetails = new HashMap<String, String>();
+
+                                priceDetails.put("six_kg", sixKgPrice);
+                                priceDetails.put("complete_six_kg", sixKgWithCylinderPrice);
+                                priceDetails.put("thirteen_kg", thirteenKgPrice);
+                                priceDetails.put("complete_thirteen_kg", thirteenKgWithCylinderPrice);
+
                                 mDatabaseReference.child("vendors").child(user.getUid()).child("business_prices").setValue(priceDetails).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
-
+                                        if (task.isSuccessful())
+                                        {
+                                            registeringBusiness.setVisibility(View.GONE);
+                                            Toast.makeText(RegisterActivity.this, "Registration Successful", Toast.LENGTH_SHORT).show();
+                                            startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                                        }
+                                        else if (task.getException() != null)
+                                        {
+                                            Log.e("DATABASE ERROR", task.getException().getMessage());
+                                        }
                                     }
                                 });
 
@@ -172,7 +187,6 @@ public class RegisterActivity extends AppCompatActivity {
                                 Toast.makeText(RegisterActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
                             }
 
-                            startActivity(new Intent(RegisterActivity.this, LoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK));
                         }
                     });
                 }

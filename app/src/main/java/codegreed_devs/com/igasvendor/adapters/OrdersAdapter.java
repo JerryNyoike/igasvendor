@@ -40,7 +40,7 @@ public class OrdersAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
 
-        view = LayoutInflater.from(context).inflate(R.layout.history_item, viewGroup, false);
+        view = LayoutInflater.from(context).inflate(R.layout.order_item, viewGroup, false);
 
         ViewHolder viewHolder = new ViewHolder();
         viewHolder.gasBrand = view.findViewById(R.id.gas_brand);

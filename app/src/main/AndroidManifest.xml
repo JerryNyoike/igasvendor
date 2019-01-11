@@ -2,8 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="codegreed_devs.com.igasvendor">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
 
     <application
         android:allowBackup="true"
@@ -23,8 +26,18 @@
         <activity android:name=".ui.LoginActivity" />
         <activity android:name=".ui.Home" />
         <activity android:name=".ui.History" />
-        <activity android:name=".ui.ViewOrder"/>
-        <activity android:name=".ui.EditProfile"/>
+        <activity android:name=".ui.ViewOrder" />
+        <activity android:name=".ui.EditProfile" />
+
+        <service
+            android:name=".utils.MyFirebaseMessagingService"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+            </intent-filter>
+        </service>
+
     </application>
 
 </manifest>

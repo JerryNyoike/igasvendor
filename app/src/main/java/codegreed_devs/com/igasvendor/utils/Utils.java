@@ -3,9 +3,12 @@ package codegreed_devs.com.igasvendor.utils;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
-import android.location.Location;
 
-import com.firebase.geofire.GeoLocation;
+import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,6 +30,13 @@ public class Utils {
                 .apply();
     }
 
+    public static void setPrefBoolean(Context context, String key, boolean value) {
+        context.getSharedPreferences(Constants.SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putBoolean(key, value)
+                .apply();
+    }
+
     public static boolean isFirstLogin(Context context){
         return context.getSharedPreferences(Constants.SHARED_PREF_NAME, Context.MODE_PRIVATE)
                 .getBoolean(Constants.SHARED_PREF_NAME_IS_FIRST_LOGIN, true);
@@ -35,6 +45,16 @@ public class Utils {
     public static String getPrefString(Context context, String key){
         return context.getSharedPreferences(Constants.SHARED_PREF_NAME, Context.MODE_PRIVATE)
                 .getString(key, "");
+    }
+
+    public static float getPrefFloat(Context context, String key){
+        return context.getSharedPreferences(Constants.SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                .getFloat(key, 0);
+    }
+
+    public static boolean getPrefBoolean(Context context, String key) {
+        return context.getSharedPreferences(Constants.SHARED_PREF_NAME, Context.MODE_PRIVATE)
+                .getBoolean(key, false);
     }
 
     public static void clearSP(Context context) {
@@ -67,4 +87,25 @@ public class Utils {
         }
         return address;
     }
+
+    public static void sendFCMNotification(String jsonData, Callback callback){
+
+        OkHttpClient okHttpClient = new OkHttpClient();
+
+        MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+
+        RequestBody requestBody =  RequestBody.create(JSON, jsonData);
+
+        Request request = new Request.Builder()
+                .url(Constants.FCM_URL)
+                .addHeader("Content-Type","application/json")
+                .addHeader("Accept", "application/json")
+                .addHeader("Authorization", "key=" + Constants.FCM_AUTH_TOKEN)
+                .post(requestBody)
+                .build();
+
+        okHttpClient.newCall(request).enqueue(callback);
+
+    }
+
 }

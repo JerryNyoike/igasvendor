@@ -15,13 +15,21 @@
       },
       "oauth_client": [
         {
+          "client_id": "981860619165-2es6bgknd0cirls2h1c6prbbhmghb26d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "codegreed_devs.com.igasvendor",
+            "certificate_hash": "f93f9122c92dfd6f2ad0efd7750b66ca3a1c129e"
+          }
+        },
+        {
           "client_id": "981860619165-1rpo8lfr4cij4o0an0stcv170jqdi4c4.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDMt472fVLKi2cg2Rs8T0vVmgKkRT8uO4Q"
+          "current_key": "AIzaSyDnp5qh74vSGwfBnhvEfEZrYTBtbsXSq3o"
         }
       ],
       "services": {
@@ -29,8 +37,13 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "981860619165-1rpo8lfr4cij4o0an0stcv170jqdi4c4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
           "status": 2
@@ -60,7 +73,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDMt472fVLKi2cg2Rs8T0vVmgKkRT8uO4Q"
+          "current_key": "AIzaSyDnp5qh74vSGwfBnhvEfEZrYTBtbsXSq3o"
         }
       ],
       "services": {

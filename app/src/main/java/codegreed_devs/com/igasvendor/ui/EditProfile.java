@@ -128,6 +128,7 @@ public class EditProfile extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 if (validate())
+                    btnUpdate.setEnabled(false);
                     updateBusinessDetails();
             }
         });
@@ -150,6 +151,8 @@ public class EditProfile extends AppCompatActivity {
             geoFire.setLocation("business_location", new GeoLocation(businessLocation.getLatitude(), businessLocation.getLongitude()), new GeoFire.CompletionListener() {
                 @Override
                 public void onComplete(String key, DatabaseError error) {
+                    Utils.setPrefFloat(getApplicationContext(), Constants.SHARED_PREF_NAME_LOC_LAT, (float) businessLocation.getLatitude());
+                    Utils.setPrefFloat(getApplicationContext(), Constants.SHARED_PREF_NAME_LOC_LONG, (float) businessLocation.getLongitude());
                     if(error != null){
                         Log.e("GEOFIRE ERROR", error.getMessage());
                     }
@@ -163,18 +166,18 @@ public class EditProfile extends AppCompatActivity {
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful())
                 {
-                    loadUpdate.dismiss();
                     updateSharedPreferences();
                     Toast.makeText(EditProfile.this, "Updated", Toast.LENGTH_SHORT).show();
                 }
                 else
                 {
-                    loadUpdate.dismiss();
                     Toast.makeText(EditProfile.this, "Something went wrong", Toast.LENGTH_SHORT).show();
 
                     if (task.getException() != null)
                         Log.e("DATABASE ERROR", task.getException().getMessage());
                 }
+                btnUpdate.setEnabled(true);
+                loadUpdate.dismiss();
             }
         });
 
@@ -183,13 +186,14 @@ public class EditProfile extends AppCompatActivity {
     private void getLastKnownLocation() {
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{}, Constants.LOCATION_PERMISSIONS_REQUEST_CODE);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION}, Constants.LOCATION_PERMISSIONS_REQUEST_CODE);
             return;
         }
+
         mFusedLocationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-
                 if (location != null) {
                     businessLocation = location;
                     currentAddress = Utils.getAddressFromLocation(getApplicationContext(), businessLocation.getLatitude(), businessLocation.getLongitude());
@@ -219,8 +223,6 @@ public class EditProfile extends AppCompatActivity {
         Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_THIRTEEN_KG_PRICE, thirteenKgPrice);
         Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_COMPLETE_THIRTEEN_KG_PRICE, thirteenKgWithCylinderPrice);
         Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_ADDRESS, btnLocation.getText().toString().substring(17));
-        Utils.setPrefFloat(getApplicationContext(), Constants.SHARED_PREF_NAME_LOC_LAT, (float) businessLocation.getLatitude());
-        Utils.setPrefFloat(getApplicationContext(), Constants.SHARED_PREF_NAME_LOC_LONG, (float) businessLocation.getLongitude());
     }
 
     private boolean validate() {

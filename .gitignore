@@ -9,3 +9,4 @@
 /build
 /captures
 .externalNativeBuild
+/app/src/main/java/codegreed_devs/com/igasvendor/utils/Constants.java

@@ -21,15 +21,32 @@
             app:title="@string/order"
             app:titleTextColor="@color/white">
 
-            <ImageView
-                android:id="@+id/view_in_map"
-                android:layout_width="25dp"
-                android:layout_height="25dp"
-                android:layout_gravity="center|end"
-                android:src="@android:drawable/ic_dialog_map"
-                app:backgroundTint="@color/colorPrimary"
-                android:layout_marginEnd="10dp"
-                android:visibility="gone"/>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center|end">
+
+                <ImageView
+                    android:id="@+id/view_in_map"
+                    android:layout_width="40dp"
+                    android:layout_height="match_parent"
+                    android:src="@android:drawable/ic_dialog_map"
+                    app:backgroundTint="@color/colorPrimary"
+                    android:paddingStart="5dp"
+                    android:paddingEnd="5dp"
+                    android:visibility="gone"/>
+
+                <ImageView
+                    android:id="@+id/call_client"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_action_phone"
+                    app:backgroundTint="@color/colorPrimary"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:visibility="gone"/>
+
+            </LinearLayout>
 
         </android.support.v7.widget.Toolbar>
 
