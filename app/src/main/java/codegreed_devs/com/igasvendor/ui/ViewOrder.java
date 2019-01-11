@@ -185,7 +185,6 @@ public class ViewOrder extends AppCompatActivity {
                     }
                     else if(order_status.equals("finished"))
                     {
-                        viewInMap.setVisibility(View.GONE);
                         submit.setVisibility(View.GONE);
                     }
                 }
