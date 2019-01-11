@@ -88,6 +88,7 @@ public class Home extends AppCompatActivity {
         {
             switchCompat.setChecked(true);
             onlineStatus.setText(getResources().getString(R.string.online));
+            toggleOnlineStatus(false);
         }
 
         //handle item clicks

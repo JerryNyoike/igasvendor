@@ -88,6 +88,7 @@ public class LoginActivity extends AppCompatActivity {
     // in with provided email and password
     private void signInWithEmail(){
 
+        signIn.setEnabled(false);
         loadLogin.setVisibility(View.VISIBLE);
 
         auth.signInWithEmailAndPassword(email, password)
@@ -100,6 +101,7 @@ public class LoginActivity extends AppCompatActivity {
                         }
                         else
                         {
+                            signIn.setEnabled(true);
                             loadLogin.setVisibility(View.GONE);
                             Toast.makeText(LoginActivity.this, "Couldn't log you in", Toast.LENGTH_SHORT).show();
                         }
@@ -220,13 +222,8 @@ public class LoginActivity extends AppCompatActivity {
         rootRef.child("vendors").child(vendorId).child("fcm_token").setValue(token).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                if (!task.isSuccessful())
+                if (!task.isSuccessful() && task.getException() != null)
                 {
-
-                }
-                else
-                {
-                    if (task.getException() != null)
                         Log.e("FCM ERROR", task.getException().getMessage());
                 }
             }

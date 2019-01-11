@@ -1,12 +1,14 @@
 package codegreed_devs.com.igasvendor.ui;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -105,93 +107,21 @@ public class RegisterActivity extends AppCompatActivity {
         btnLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                registeringBusiness.setVisibility(View.VISIBLE);
                 getBusinessLocation();
-                //save to shared preferences
             }
         });
 
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View v) {
-                registeringBusiness.setVisibility(View.VISIBLE);
 
-                getBusinessDetails();
-
-                if (validateUserData()) {
-
-                    btnRegister.setClickable(false);
-                    btnLocation.setClickable(false);
-                    mAuth.createUserWithEmailAndPassword(businessEmail, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<AuthResult> task) {
-                            if (task.isSuccessful()) {
-                                //write user to the database
-                                final FirebaseUser user = mAuth.getCurrentUser();
-
-                                assert user != null;
-
-                                Map<String, String> generalDetails = new HashMap<String, String>();
-
-
-                                generalDetails.put("business_id", user.getUid());
-                                generalDetails.put("business_name", businessName);
-                                generalDetails.put("business_email", businessEmail);
-
-                                if (businessAddress != null)
-                                    generalDetails.put("business_address", businessAddress);
-
-                                mDatabaseReference.child("vendors").child(user.getUid()).setValue(generalDetails).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        if (task.isSuccessful()){
-                                            geoFire = new GeoFire(mDatabaseReference.child("vendors").child(user.getUid()));
-                                            geoFire.setLocation("business_location", new GeoLocation(businesslocation.getLatitude(), businesslocation.getLongitude()), new GeoFire.CompletionListener() {
-                                                @Override
-                                                public void onComplete(String key, DatabaseError error) {
-                                                    if (error != null)
-                                                        Log.e("GEOFIRE ERROR", error.getMessage());
-                                                }
-                                            });
-                                        } else if (task.getException() != null){
-                                            Log.e("DATABASE ERROR", task.getException().getMessage());
-                                        }
-                                    }
-                                });
-
-                                Map<String, String> priceDetails = new HashMap<String, String>();
-
-                                priceDetails.put("six_kg", sixKgPrice);
-                                priceDetails.put("complete_six_kg", sixKgWithCylinderPrice);
-                                priceDetails.put("thirteen_kg", thirteenKgPrice);
-                                priceDetails.put("complete_thirteen_kg", thirteenKgWithCylinderPrice);
-
-                                mDatabaseReference.child("vendors").child(user.getUid()).child("business_prices").setValue(priceDetails).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        if (task.isSuccessful())
-                                        {
-                                            registeringBusiness.setVisibility(View.GONE);
-                                            Toast.makeText(RegisterActivity.this, "Registration Successful", Toast.LENGTH_SHORT).show();
-                                            startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
-                                        }
-                                        else if (task.getException() != null)
-                                        {
-                                            Log.e("DATABASE ERROR", task.getException().getMessage());
-                                        }
-                                    }
-                                });
-
-                            } else {
-                                registeringBusiness.setVisibility(View.GONE);
-                                Toast.makeText(RegisterActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
-                            }
-
-                        }
-                    });
+                if (businesslocation == null)
+                {
+                    alertToEnterBusinessLocation();
+                    return;
                 }
 
-
+                signInWithEmail();
             }
         });
 
@@ -203,6 +133,109 @@ public class RegisterActivity extends AppCompatActivity {
         });
 
 
+    }
+
+    private void signInWithEmail(){
+
+        getBusinessDetails();
+
+        if (validateUserData()) {
+
+            registeringBusiness.setVisibility(View.VISIBLE);
+
+            btnRegister.setClickable(false);
+            btnLocation.setClickable(false);
+
+            mAuth.createUserWithEmailAndPassword(businessEmail, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
+                        //write user to the database
+                        final FirebaseUser user = mAuth.getCurrentUser();
+
+                        assert user != null;
+
+                        Map<String, String> generalDetails = new HashMap<String, String>();
+
+                        generalDetails.put("business_id", user.getUid());
+                        generalDetails.put("business_name", businessName);
+                        generalDetails.put("business_email", businessEmail);
+
+                        if (businessAddress != null)
+                            generalDetails.put("business_address", businessAddress);
+
+                        mDatabaseReference.child("vendors").child(user.getUid()).setValue(generalDetails).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()){
+                                    if (businesslocation != null)
+                                    {
+                                        geoFire = new GeoFire(mDatabaseReference.child("vendors").child(user.getUid()));
+                                        geoFire.setLocation("business_location", new GeoLocation(businesslocation.getLatitude(), businesslocation.getLongitude()), new GeoFire.CompletionListener() {
+                                            @Override
+                                            public void onComplete(String key, DatabaseError error) {
+                                                if (error != null)
+                                                    Log.e("GEOFIRE ERROR", error.getMessage());
+                                            }
+                                        });
+                                    }
+                                } else if (task.getException() != null){
+                                    Log.e("DATABASE ERROR", task.getException().getMessage());
+                                }
+                            }
+                        });
+
+                        Map<String, String> priceDetails = new HashMap<String, String>();
+
+                        priceDetails.put("six_kg", sixKgPrice);
+                        priceDetails.put("complete_six_kg", sixKgWithCylinderPrice);
+                        priceDetails.put("thirteen_kg", thirteenKgPrice);
+                        priceDetails.put("complete_thirteen_kg", thirteenKgWithCylinderPrice);
+
+                        mDatabaseReference.child("vendors").child(user.getUid()).child("business_prices").setValue(priceDetails).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful())
+                                {
+                                    registeringBusiness.setVisibility(View.GONE);
+                                    Toast.makeText(RegisterActivity.this, "Registration Successful", Toast.LENGTH_SHORT).show();
+                                    startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                                }
+                                else if (task.getException() != null)
+                                {
+                                    Log.e("DATABASE ERROR", task.getException().getMessage());
+                                }
+                            }
+                        });
+
+                    } else {
+                        btnRegister.setClickable(true);
+                        btnLocation.setClickable(true);
+                        registeringBusiness.setVisibility(View.GONE);
+                        Toast.makeText(RegisterActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
+                    }
+
+                }
+            });
+        }
+    }
+
+    private void alertToEnterBusinessLocation() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setMessage(getResources().getString(R.string.no_location_set));
+        alert.setPositiveButton("Set Now", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                getBusinessLocation();
+            }
+        });
+        alert.setNegativeButton("Set Later", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                signInWithEmail();
+            }
+        });
+        alert.show();
     }
 
     private boolean validateUserData() {
@@ -246,7 +279,6 @@ public class RegisterActivity extends AppCompatActivity {
         //take the users location
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(RegisterActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, Constants.LOCATION_PERMISSIONS_REQUEST_CODE);
-
             return;
         }
 
