@@ -122,6 +122,7 @@ public class Home extends AppCompatActivity {
     private void getPendingOrderDetails(){
 
         loadAction.setMessage("Getting orders...");
+        loadAction.setCancelable(false);
         loadAction.show();
 
         rootDBRef.child("Order Details").child(vendorId).addValueEventListener(new ValueEventListener() {
