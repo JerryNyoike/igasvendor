@@ -198,7 +198,7 @@ public class RegisterActivity extends AppCompatActivity {
                                 if (task.isSuccessful())
                                 {
                                     registeringBusiness.setVisibility(View.GONE);
-                                    Toast.makeText(RegisterActivity.this, "Registration Successful", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(RegisterActivity.this, "Registration Successful.Now Login", Toast.LENGTH_SHORT).show();
                                     startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
                                 }
                                 else if (task.getException() != null)

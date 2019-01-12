@@ -24,7 +24,7 @@ public class Constants {
     public static final String SHARED_PREF_NAME_THIRTEEN_KG_PRICE = "ThirteenKgPrice";
 
     public static final String CONFIRM_EMAIL_URL = "https://scriptests.000webhostapp.com/igas/vendor/send_email.php";
-    public static final String FCM_URL = "https://fcm.googleapis.com/fcm/send";
+    public static final String FCM_LEGACY_URL = "https://fcm.googleapis.com/fcm/send";
     public static final int HTTP_RESPONSE_OK = 200;
 
     public static final int LOCATION_PERMISSIONS_REQUEST_CODE = 1;
@@ -32,7 +32,7 @@ public class Constants {
 
     public static final long A_MINUTE = 1000 * 60;
 
-    public static final String FCM_AUTH_TOKEN = "AIzaSyAE4nzNEv2o-qdeRqlnwe4S-Y8yn6jfTWE";
+    public static final String FCM_LEGACY_API_TOKEN = "AIzaSyAaslzBTkkRgiPqNIriqewsvZhqZ64lL2Q";
     public static final String FCM_SENDER_ID = "981860619165";
 
 }

@@ -217,9 +217,9 @@ public class LoginActivity extends AppCompatActivity {
     //save token to database and shared preference
     private void saveFCMTokenToDatabase(String token, String vendorId) {
 
-        Log.e("FCM TOKEN", token);
-
-        rootRef.child("vendors").child(vendorId).child("fcm_token").setValue(token).addOnCompleteListener(new OnCompleteListener<Void>() {
+        rootRef.child("vendors").child(vendorId).child("fcm_token")
+                .setValue(token)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (!task.isSuccessful() && task.getException() != null)

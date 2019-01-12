@@ -307,37 +307,24 @@ public class ViewOrder extends AppCompatActivity {
 
                 if (clientFCMToken != null)
                 {
-//                    String jsonData = "{";
-//                    jsonData += "\"message\":";
-//                    jsonData += "{";
-//                    jsonData += "\"token\":";
-//                    jsonData += "\"" + clientFCMToken + "\",";
-//                    jsonData += "\"notification\":";
-//                    jsonData += "{";
-//                    jsonData += "\"title\":";
-//                    jsonData += "\"New order\",";
-//                    jsonData += "\"body\":";
-//                    jsonData += "\"You have a new order\"";
-//                    jsonData += "},";
-//                    jsonData += "\"data\":{";
-//                    jsonData += "\"order_id\":";
-//                    jsonData += "\"" + orderId + "\",";
-//                    jsonData += "\"vendor_id\":";
-//                    jsonData += "\"" + vendorId + "\"";
-//                    jsonData += "}";
-//                    jsonData += "}";
-//                    jsonData += "}";
-
                     String jsonData = "{";
-                    jsonData += "\"data\":";
+                    jsonData += "\"to\":";
+                    jsonData += "\"" + clientFCMToken + "\",";
+                    jsonData += "\"notification\":";
                     jsonData += "{";
                     jsonData += "\"title\":";
-                    jsonData += "\"New order\",";
+                    jsonData += "\"Order Status\",";
                     jsonData += "\"body\":";
-                    jsonData += "\"You have a new order\"";
+                    jsonData += "\"You order has been received and is being processed\"";
                     jsonData += "},";
-                    jsonData += "\"to\":";
-                    jsonData += "\"" + clientFCMToken + "\"";
+                    jsonData += "\"restricted_package_name\":";
+                    jsonData += "\"com.codegreed_devs.i_gas\",";
+                    jsonData += "\"data\":{";
+                    jsonData += "\"order_id\":";
+                    jsonData += "\"" + orderId + "\",";
+                    jsonData += "\"vendor_id\":";
+                    jsonData += "\"" + vendorId + "\"";
+                    jsonData += "}";
                     jsonData += "}";
 
                     try {
@@ -383,13 +370,9 @@ public class ViewOrder extends AppCompatActivity {
 
                                                 int success = jsonObject.getInt("success");
 
-                                                if (success == 1)
+                                                if (success != 0)
                                                 {
                                                     Toast.makeText(ViewOrder.this, "Client notified!", Toast.LENGTH_SHORT).show();
-                                                }
-                                                else
-                                                {
-                                                    Toast.makeText(ViewOrder.this, "Client not notified!", Toast.LENGTH_SHORT).show();
                                                 }
 
                                             } catch (JSONException e) {

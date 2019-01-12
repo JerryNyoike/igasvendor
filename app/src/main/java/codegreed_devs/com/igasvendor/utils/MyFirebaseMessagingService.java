@@ -32,10 +32,32 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     @Override
     public void onNewToken(String s) {
 
-        //save token to shared preference
-        Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_FCM_TOKEN, s);
+        saveToken(s);
 
         super.onNewToken(s);
+    }
+
+    //save token to shared preference
+    //and to database if user is logged in
+    private void saveToken(String token) {
+
+        Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_FCM_TOKEN, token);
+
+        if (!Utils.isFirstLogin(getApplicationContext()))
+            FirebaseDatabase
+                    .getInstance()
+                    .getReference("vendors")
+                    .child(Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_ID))
+                    .child("fcm_token")
+                    .setValue(token)
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (!task.isSuccessful() && task.getException() != null)
+                                Log.e("DATABASE ERROR", task.getException().getMessage());
+                        }
+                    });
+
     }
 
     @Override
@@ -43,17 +65,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         //check if message notification has body
         if (remoteMessage.getNotification() != null && remoteMessage.getData() != null)
-        {
-
-            //get message data
-            Map<String, String> messageData = remoteMessage.getData();
-
-            //get notification body
-            String notificationBody = remoteMessage.getNotification().getBody();
-
-            showNotification(notificationBody, messageData);
-
-        }
+            showNotification(remoteMessage.getNotification(), remoteMessage.getData());
 
         super.onMessageReceived(remoteMessage);
 
@@ -61,12 +73,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     //show pop up notification with passed body
-    private void showNotification(String notificationBody, @NonNull Map<String, String> messageData) {
+    private void showNotification(RemoteMessage.Notification notification, @NonNull Map<String, String> messageData) {
 
         String clientId = messageData.get("client_id");
         String orderId = messageData.get("order_id");
 
-        Log.e("NOTIFICATION","Message : " + notificationBody + ", Body : {" + clientId + "," + orderId + "}");
+        Log.e("NOTIFICATION","Notification: " + notification.toString() + ", Data : " + messageData.toString());
 
         Intent intent = new Intent(this, ViewOrder.class);
         intent.putExtra("client_id", clientId);
@@ -77,16 +89,16 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         int id = (int) System.currentTimeMillis();
 
-        Notification.Builder notification = new Notification.Builder(this)
+        Notification.Builder notificationBuilder = new Notification.Builder(this)
                 .setContentTitle(getResources().getString(R.string.app_name))
-                .setContentText(notificationBody)
+                .setContentText(notification.getTitle() + "\n" + notification.getBody())
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setAutoCancel(true)
                 .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                 .setContentIntent(pendingIntent);
 
         NotificationManager manager = (NotificationManager)this.getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.notify(id, notification.build());
+        manager.notify(id, notificationBuilder.build());
 
     }
 }

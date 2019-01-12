@@ -97,10 +97,10 @@ public class Utils {
         RequestBody requestBody =  RequestBody.create(JSON, jsonData);
 
         Request request = new Request.Builder()
-                .url(Constants.FCM_URL)
+                .url(Constants.FCM_LEGACY_URL)
                 .addHeader("Content-Type","application/json")
                 .addHeader("Accept", "application/json")
-                .addHeader("Authorization", "key=" + Constants.FCM_AUTH_TOKEN)
+                .addHeader("Authorization", "key=" + Constants.FCM_LEGACY_API_TOKEN)
                 .post(requestBody)
                 .build();
 
