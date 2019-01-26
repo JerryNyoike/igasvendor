@@ -44,6 +44,13 @@
         android:fontFamily="sans-serif-condensed"
         android:inputType="textPassword"/>
 
+    <CheckBox
+        android:id="@+id/toggle_password"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/show_password"
+        android:textColor="@color/grey"/>
+
     <Button
         android:id="@+id/login"
         android:layout_width="match_parent"

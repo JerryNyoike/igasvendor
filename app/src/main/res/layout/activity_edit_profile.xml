@@ -44,6 +44,16 @@
                 android:inputType="text"
                 android:layout_marginBottom="8dp"/>
 
+            <EditText
+                android:id="@+id/business_phone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawableStart="@drawable/ic_action_phone_light"
+                android:drawablePadding="10dp"
+                android:hint="@string/phone_number"
+                android:inputType="phone"
+                android:layout_marginBottom="8dp"/>
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

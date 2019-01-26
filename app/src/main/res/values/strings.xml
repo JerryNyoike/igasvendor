@@ -34,4 +34,6 @@
     <string name="online">Online</string>
     <string name="offline">Offline</string>
     <string name="no_location_set">You have not entered your business location. If you proceed without setting the location, Make sure to get and update your business location, while at your business premises, within the app inorder to get orders</string>
+    <string name="show_password">Show Password</string>
+    <string name="phone_number">Phone Number</string>
 </resources>

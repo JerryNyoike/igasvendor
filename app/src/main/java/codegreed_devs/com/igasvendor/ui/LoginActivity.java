@@ -2,14 +2,18 @@ package codegreed_devs.com.igasvendor.ui;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -35,6 +39,7 @@ import codegreed_devs.com.igasvendor.utils.Utils;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText logEmail, logPassword;
+    private CheckBox togglePassword;
     private Button signIn;
     private TextView signUp;
     private ProgressBar loadLogin;
@@ -51,6 +56,7 @@ public class LoginActivity extends AppCompatActivity {
         //initialize views
         logEmail = (EditText)findViewById(R.id.log_email);
         logPassword = (EditText)findViewById(R.id.log_password);
+        togglePassword = (CheckBox)findViewById(R.id.toggle_password);
         signIn = (Button)findViewById(R.id.login);
         signUp = (TextView)findViewById(R.id.sign_up);
         loadLogin = (ProgressBar)findViewById(R.id.load_login);
@@ -58,13 +64,6 @@ public class LoginActivity extends AppCompatActivity {
         //initialize variables
         auth = FirebaseAuth.getInstance();
         rootRef = FirebaseDatabase.getInstance().getReference();
-
-        //check if user is logged in
-        if(auth.getCurrentUser() != null){
-            startActivity(new Intent(LoginActivity.this, Home.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK));
-            finish();
-        }
-
 
         //handle item clicks
         signIn.setOnClickListener(new View.OnClickListener() {
@@ -82,6 +81,19 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        togglePassword.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (!isChecked)
+                {
+                    logPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                }
+                else
+                {
+                    logPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                }
+            }
+        });
     }
 
     //use firebase auth to sign user
@@ -119,6 +131,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 String business_email = dataSnapshot.child("business_email").getValue(String.class);
                 String business_name = dataSnapshot.child("business_name").getValue(String.class);
+                String business_phone = dataSnapshot.child("business_phone").getValue(String.class);
                 String business_address = dataSnapshot.child("business_address").getValue(String.class);
 
                 getBusinessLocation(u_id);
@@ -129,6 +142,7 @@ public class LoginActivity extends AppCompatActivity {
                     Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_ID, u_id);
                     Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_NAME, business_name);
                     Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_EMAIL, business_email);
+                    Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_PHONE, business_phone);
                     Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_ADDRESS, business_address);
                     Utils.setPrefBoolean(getApplicationContext(), Constants.SHARED_PREF_NAME_IS_FIRST_LOGIN, false);
 

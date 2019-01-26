@@ -10,10 +10,12 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -47,11 +49,12 @@ public class RegisterActivity extends AppCompatActivity {
 
     private static final String TAG = "RegisterActivity";
     private ProgressBar registeringBusiness;
-    private EditText etBusinessName, etBusinessEmail, etPassword, etSixKgPrice, etThirteenKgPrice, etSixKgWithCylinderPrice, etThirteenKgWithCylinderPrice;
+    private EditText etBusinessName, etBusinessEmail, etPhone, etPassword, etSixKgPrice, etThirteenKgPrice, etSixKgWithCylinderPrice, etThirteenKgWithCylinderPrice;
+    private CheckBox togglePassword;
     private CheckBox termsAndCondiditions;
     private Button btnRegister, btnLocation;
     private TextView tvSignIn;
-    private String businessName, businessEmail, password, sixKgPrice, sixKgWithCylinderPrice, thirteenKgPrice, thirteenKgWithCylinderPrice;
+    private String businessName, businessEmail, businessPhone, password, sixKgPrice, sixKgWithCylinderPrice, thirteenKgPrice, thirteenKgWithCylinderPrice;
     private Location businesslocation;
     private FirebaseAuth mAuth;
     private FusedLocationProviderClient mFusedLocationClient;
@@ -78,7 +81,9 @@ public class RegisterActivity extends AppCompatActivity {
         registeringBusiness = findViewById(R.id.registering);
         etBusinessName = findViewById(R.id.business_name);
         etBusinessEmail = findViewById(R.id.email);
+        etPhone = findViewById(R.id.phone_number);
         etPassword = findViewById(R.id.reg_password);
+        togglePassword = (CheckBox)findViewById(R.id.toggle_password);
         etSixKgPrice = findViewById(R.id.six_kg_price);
         etSixKgWithCylinderPrice = findViewById(R.id.complete_six_kg_price);
         etThirteenKgPrice = findViewById(R.id.thirteen_kg_price);
@@ -113,7 +118,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(final View v) {
+            public void onClick(View v) {
 
                 if (businesslocation == null)
                 {
@@ -129,6 +134,20 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getApplicationContext(), LoginActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK));
+            }
+        });
+
+        togglePassword.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                if (!isChecked)
+                {
+                    etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                }
+                else
+                {
+                    etPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                }
             }
         });
 
@@ -160,6 +179,7 @@ public class RegisterActivity extends AppCompatActivity {
                         generalDetails.put("business_id", user.getUid());
                         generalDetails.put("business_name", businessName);
                         generalDetails.put("business_email", businessEmail);
+                        generalDetails.put("business_phone", businessPhone);
 
                         if (businessAddress != null)
                             generalDetails.put("business_address", businessAddress);
@@ -200,6 +220,7 @@ public class RegisterActivity extends AppCompatActivity {
                                     registeringBusiness.setVisibility(View.GONE);
                                     Toast.makeText(RegisterActivity.this, "Registration Successful.Now Login", Toast.LENGTH_SHORT).show();
                                     startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                                    finish();
                                 }
                                 else if (task.getException() != null)
                                 {
@@ -248,6 +269,10 @@ public class RegisterActivity extends AppCompatActivity {
             etBusinessEmail.setError("Enter a business email");
             registeringBusiness.setVisibility(View.GONE);
             return false;
+        }  else if (businessPhone.isEmpty()) {
+            etPhone.setError("Enter a business phone number");
+            registeringBusiness.setVisibility(View.GONE);
+            return false;
         } else if (password.length() < 6) {
             etPassword.setError("Password must be more than 6 characters!");
             registeringBusiness.setVisibility(View.GONE);
@@ -267,6 +292,7 @@ public class RegisterActivity extends AppCompatActivity {
     private void getBusinessDetails() {
         businessName = etBusinessName.getText().toString().trim();
         businessEmail = etBusinessEmail.getText().toString().trim();
+        businessPhone = etPhone.getText().toString().trim();
         password = etPassword.getText().toString().trim();
         sixKgPrice = etSixKgPrice.getText().toString().trim();
         sixKgWithCylinderPrice = etSixKgWithCylinderPrice.getText().toString().trim();

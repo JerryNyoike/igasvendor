@@ -12,6 +12,7 @@ public class Constants {
     public static final String SHARED_PREF_NAME_IS_ONLINE = "IsOnline";
     public static final String SHARED_PREF_NAME_BUSINESS_NAME = "BusinessName";
     public static final String SHARED_PREF_NAME_BUSINESS_EMAIL = "BusinessEmail";
+    public static final String SHARED_PREF_NAME_BUSINESS_PHONE = "PhoneNumber";
     public static final String SHARED_PREF_NAME_BUSINESS_ADDRESS = "BusinessAddress";
     public static final String SHARED_PREF_NAME_BUSINESS_ID = "BusinessId";
     public static final String SHARED_PREF_NAME_LOC_LAT = "LocationLatitude";

@@ -41,7 +41,7 @@ import codegreed_devs.com.igasvendor.utils.Utils;
 
 public class EditProfile extends AppCompatActivity {
 
-    private EditText etBusinessName, etSixKgPrice, etThirteenKgPrice, etSixKgWithCylinderPrice, etThirteenKgWithCylinderPrice;
+    private EditText etBusinessName, etPhone, etSixKgPrice, etThirteenKgPrice, etSixKgWithCylinderPrice, etThirteenKgWithCylinderPrice;
     private ProgressDialog loadUpdate;
     private String businessName, sixKgPrice, sixKgWithCylinderPrice, thirteenKgPrice, thirteenKgWithCylinderPrice;
     private Location businessLocation;
@@ -51,7 +51,7 @@ public class EditProfile extends AppCompatActivity {
     private LocationRequest mLocationRequest;
     private Button btnUpdate, btnLocation;
     private GeoFire geoFire;
-    private String businessId, currentAddress;
+    private String businessId, businessPhone, currentAddress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +61,7 @@ public class EditProfile extends AppCompatActivity {
         //get business details from SP
         businessId = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_ID);
         businessName = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_NAME);
+        businessPhone = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_PHONE);
         currentAddress = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_ADDRESS);
         sixKgPrice = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_SIX_KG_PRICE);
         sixKgWithCylinderPrice = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_COMPLETE_SIX_KG_PRICE);
@@ -110,6 +111,7 @@ public class EditProfile extends AppCompatActivity {
 
         //update ui
         etBusinessName.setText(businessName);
+        etPhone.setText(businessPhone);
         etSixKgPrice.setText(sixKgPrice);
         etSixKgWithCylinderPrice.setText(sixKgWithCylinderPrice);
         etThirteenKgPrice.setText(thirteenKgPrice);
@@ -160,6 +162,7 @@ public class EditProfile extends AppCompatActivity {
             });
 
         mDatabaseReference.child("business_name").setValue(businessName);
+        mDatabaseReference.child("business_phone").setValue(businessPhone);
         mDatabaseReference.child("business_address").setValue(currentAddress);
         mDatabaseReference.child("business_prices").setValue(business_prices).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
@@ -218,6 +221,7 @@ public class EditProfile extends AppCompatActivity {
 
     private void updateSharedPreferences(){
         Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_NAME, businessName);
+        Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_PHONE, businessPhone);
         Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_SIX_KG_PRICE, sixKgPrice);
         Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_COMPLETE_SIX_KG_PRICE, sixKgWithCylinderPrice);
         Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_THIRTEEN_KG_PRICE, thirteenKgPrice);
@@ -236,6 +240,11 @@ public class EditProfile extends AppCompatActivity {
         if (TextUtils.isEmpty(businessName))
         {
             etBusinessName.setError("Enter valid business name");
+            return false;
+        }
+        else if (TextUtils.isEmpty(businessPhone))
+        {
+            etSixKgPrice.setError("Please enter valid phone number");
             return false;
         }
         else if (TextUtils.isEmpty(sixKgPrice))
