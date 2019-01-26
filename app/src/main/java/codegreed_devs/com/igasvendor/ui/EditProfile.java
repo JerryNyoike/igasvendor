@@ -75,6 +75,7 @@ public class EditProfile extends AppCompatActivity {
 
         //initialize views
         etBusinessName = findViewById(R.id.business_name);
+        etPhone = findViewById(R.id.business_phone);
         etSixKgPrice = findViewById(R.id.six_kg_price);
         etSixKgWithCylinderPrice = findViewById(R.id.complete_six_kg_price);
         etThirteenKgPrice = findViewById(R.id.thirteen_kg_price);
@@ -232,6 +233,7 @@ public class EditProfile extends AppCompatActivity {
     private boolean validate() {
 
         businessName = etBusinessName.getText().toString().trim();
+        businessPhone = etPhone.getText().toString().trim();
         sixKgPrice = etSixKgPrice.getText().toString().trim();
         sixKgWithCylinderPrice = etSixKgWithCylinderPrice.getText().toString().trim();
         thirteenKgPrice = etThirteenKgPrice.getText().toString().trim();
