@@ -62,62 +62,12 @@
                 android:text="@string/set_your_prices"
                 android:textSize="18sp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/_6_kg_price"
-                android:textSize="14sp"/>
-
             <EditText
-                android:id="@+id/six_kg_price"
+                android:id="@+id/business_prices"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:hint="@string/_6_kg_price"
-                android:inputType="number" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/_6_kg_with_cylinder"
-                android:textSize="14sp" />
-
-            <EditText
-                android:id="@+id/complete_six_kg_price"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:hint="@string/_6_kg_with_cylinder"
-                android:inputType="number" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/_13_kg_price"
-                android:textSize="14sp" />
-
-            <EditText
-                android:id="@+id/thirteen_kg_price"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:hint="@string/_13_kg_price"
-                android:inputType="number" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/_13_kg_with_cylinder"
-                android:textSize="14sp" />
-
-
-            <EditText
-                android:id="@+id/complete_thirteen_kg_price"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:hint="@string/_13_kg_with_cylinder"
-                android:inputType="number" />
+                android:layout_height="200dp"
+                android:hint="@string/enter_business_prices"
+                android:layout_marginBottom="8dp"/>
 
             <TextView
                 android:layout_width="match_parent"

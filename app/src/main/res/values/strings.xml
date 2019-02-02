@@ -36,4 +36,23 @@
     <string name="no_location_set">You have not entered your business location. If you proceed without setting the location, Make sure to get and update your business location, while at your business premises, within the app inorder to get orders</string>
     <string name="show_password">Show Password</string>
     <string name="phone_number">Phone Number</string>
+    <string name="_22_5_kg_price">22.5 kg price</string>
+    <string name="price">Price</string>
+    <string name="_50_kg_price">50 kg price</string>
+    <string name="gas_refill">Gas Refill Only</string>
+    <string name="cylinder_plus_gas"><![CDATA[Cylinder & Gas]]></string>
+    <string name="accessories">Accessories</string>
+    <string name="_6_kg_meko_grill">6 kg meko grill</string>
+    <string name="_3_kg_meko_grill">3 kg meko grill</string>
+    <string name="low_pressure_regulator">Low pressure regulator</string>
+    <string name="low_pressure_hose_pipe">Low pressure hose pipe</string>
+    <string name="high_pressure_regulator">High pressure regulator</string>
+    <string name="high_pressure_hose_pipe">High pressure hose pipe</string>
+    <string name="enter_business_prices">
+        Enter your business products\n
+        and prices here eg.\n
+        3kg gas refill - ksh. 650\n
+        3kg gas and cylinder - ksh. 2000\n
+        3kg meko grill - ksh. 270 e.t.c
+    </string>
 </resources>

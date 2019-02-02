@@ -106,48 +106,6 @@
                 android:layout_gravity="center"
                 android:layout_marginTop="5dp"/>
 
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_margin="8dp"
-                android:text="Set your prices"
-                android:textSize="18sp" />
-
-            <EditText
-                android:id="@+id/six_kg_price"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:hint="6 Kg price"
-                android:inputType="number" />
-
-            <EditText
-                android:id="@+id/complete_six_kg_price"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:hint="6 Kg with cylinder:"
-                android:inputType="number" />
-
-            <EditText
-                android:id="@+id/thirteen_kg_price"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:hint="13 Kg price"
-                android:inputType="number" />
-
-            <EditText
-                android:id="@+id/complete_thirteen_kg_price"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:hint="13 Kg with cylinder:"
-                android:inputType="number" />
-
-
             <android.support.v7.widget.AppCompatCheckBox
                 android:id="@+id/checkboxTerms"
                 android:layout_width="wrap_content"

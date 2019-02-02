@@ -19,10 +19,8 @@ public class Constants {
     public static final String SHARED_PREF_NAME_LOC_LONG = "LocationLongitude";
     public static final String SHARED_PREF_NAME_FCM_TOKEN = "FCMToken";
 
-    public static final String SHARED_PREF_NAME_COMPLETE_SIX_KG_PRICE = "CompleteSixKgPrice";
-    public static final String SHARED_PREF_NAME_COMPLETE_THIRTEEN_KG_PRICE = "CompleteThirteenKgPrice";
-    public static final String SHARED_PREF_NAME_SIX_KG_PRICE = "SixKgPrice";
-    public static final String SHARED_PREF_NAME_THIRTEEN_KG_PRICE = "ThirteenKgPrice";
+    public static final String SHARED_PREF_NAME_BUSINESS_PRICES = "BusinessPrices";
+    public static final String SHARED_PREF_NAME_BUSINESS_PRICES_SET = "BusinessPricesSet";
 
     public static final String CONFIRM_EMAIL_URL = "https://scriptests.000webhostapp.com/igas/vendor/send_email.php";
     public static final String FCM_LEGACY_URL = "https://fcm.googleapis.com/fcm/send";
@@ -30,10 +28,12 @@ public class Constants {
 
     public static final int LOCATION_PERMISSIONS_REQUEST_CODE = 1;
     public static final int CALL_PHONE_PERMISSION_REQUEST_CODE = 2;
+    public static final int SMS_PERMISSION_REQUEST_CODE = 3;
 
     public static final long A_MINUTE = 1000 * 60;
 
     public static final String FCM_LEGACY_API_TOKEN = "AIzaSyAaslzBTkkRgiPqNIriqewsvZhqZ64lL2Q";
     public static final String FCM_SENDER_ID = "981860619165";
+
 
 }

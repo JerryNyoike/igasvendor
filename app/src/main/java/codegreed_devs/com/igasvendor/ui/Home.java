@@ -91,6 +91,12 @@ public class Home extends AppCompatActivity {
             toggleOnlineStatus(false);
         }
 
+        if (!Utils.businessPricesSet(getApplicationContext()))
+        {
+            startActivity(new Intent(getApplicationContext(), EditProfile.class));
+            Toast.makeText(this, "Set your business prices here", Toast.LENGTH_LONG).show();
+        }
+
         //handle item clicks
         ordersList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

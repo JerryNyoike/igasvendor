@@ -2,6 +2,7 @@ package codegreed_devs.com.igasvendor.ui;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -41,9 +42,9 @@ import codegreed_devs.com.igasvendor.utils.Utils;
 
 public class EditProfile extends AppCompatActivity {
 
-    private EditText etBusinessName, etPhone, etSixKgPrice, etThirteenKgPrice, etSixKgWithCylinderPrice, etThirteenKgWithCylinderPrice;
+    private EditText etBusinessName, etPhone, etBusinessPrices;
     private ProgressDialog loadUpdate;
-    private String businessName, sixKgPrice, sixKgWithCylinderPrice, thirteenKgPrice, thirteenKgWithCylinderPrice;
+    private String businessName, businessPrices;
     private Location businessLocation;
     private FusedLocationProviderClient mFusedLocationClient;
     private DatabaseReference mDatabaseReference;
@@ -63,10 +64,7 @@ public class EditProfile extends AppCompatActivity {
         businessName = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_NAME);
         businessPhone = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_PHONE);
         currentAddress = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_ADDRESS);
-        sixKgPrice = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_SIX_KG_PRICE);
-        sixKgWithCylinderPrice = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_COMPLETE_SIX_KG_PRICE);
-        thirteenKgPrice = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_THIRTEEN_KG_PRICE);
-        thirteenKgWithCylinderPrice = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_COMPLETE_THIRTEEN_KG_PRICE);
+        businessPrices = Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_PRICES);
 
         //set up toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -76,10 +74,7 @@ public class EditProfile extends AppCompatActivity {
         //initialize views
         etBusinessName = findViewById(R.id.business_name);
         etPhone = findViewById(R.id.business_phone);
-        etSixKgPrice = findViewById(R.id.six_kg_price);
-        etSixKgWithCylinderPrice = findViewById(R.id.complete_six_kg_price);
-        etThirteenKgPrice = findViewById(R.id.thirteen_kg_price);
-        etThirteenKgWithCylinderPrice = findViewById(R.id.complete_thirteen_kg_price);
+        etBusinessPrices = findViewById(R.id.business_prices);
         btnUpdate = findViewById(R.id.update);
         btnLocation = findViewById(R.id.fetch_location);
         loadUpdate = new ProgressDialog(this);
@@ -113,10 +108,7 @@ public class EditProfile extends AppCompatActivity {
         //update ui
         etBusinessName.setText(businessName);
         etPhone.setText(businessPhone);
-        etSixKgPrice.setText(sixKgPrice);
-        etSixKgWithCylinderPrice.setText(sixKgWithCylinderPrice);
-        etThirteenKgPrice.setText(thirteenKgPrice);
-        etThirteenKgWithCylinderPrice.setText(thirteenKgWithCylinderPrice);
+        etBusinessPrices.setText(businessPrices);
         btnLocation.setText("Current Address: " + currentAddress);
 
         //handle item clicks
@@ -144,12 +136,6 @@ public class EditProfile extends AppCompatActivity {
         loadUpdate.setCancelable(false);
         loadUpdate.show();
 
-        Map<String, String> business_prices = new HashMap<String, String>();
-        business_prices.put("complete_six_kg", sixKgWithCylinderPrice);
-        business_prices.put("complete_thirteen_kg", thirteenKgWithCylinderPrice);
-        business_prices.put("six_kg", sixKgPrice);
-        business_prices.put("thirteen_kg", thirteenKgPrice);
-
         if (businessLocation != null)
             geoFire.setLocation("business_location", new GeoLocation(businessLocation.getLatitude(), businessLocation.getLongitude()), new GeoFire.CompletionListener() {
                 @Override
@@ -165,13 +151,12 @@ public class EditProfile extends AppCompatActivity {
         mDatabaseReference.child("business_name").setValue(businessName);
         mDatabaseReference.child("business_phone").setValue(businessPhone);
         mDatabaseReference.child("business_address").setValue(currentAddress);
-        mDatabaseReference.child("business_prices").setValue(business_prices).addOnCompleteListener(new OnCompleteListener<Void>() {
+        mDatabaseReference.child("business_prices").setValue(businessPrices).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful())
                 {
                     updateSharedPreferences();
-                    Toast.makeText(EditProfile.this, "Updated", Toast.LENGTH_SHORT).show();
                 }
                 else
                 {
@@ -223,21 +208,20 @@ public class EditProfile extends AppCompatActivity {
     private void updateSharedPreferences(){
         Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_NAME, businessName);
         Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_PHONE, businessPhone);
-        Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_SIX_KG_PRICE, sixKgPrice);
-        Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_COMPLETE_SIX_KG_PRICE, sixKgWithCylinderPrice);
-        Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_THIRTEEN_KG_PRICE, thirteenKgPrice);
-        Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_COMPLETE_THIRTEEN_KG_PRICE, thirteenKgWithCylinderPrice);
-        Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_ADDRESS, btnLocation.getText().toString().substring(17));
+        Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_PRICES, businessPrices);
+        Utils.setPrefBoolean(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_PRICES_SET, true);
+        Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_ADDRESS, currentAddress);
+
+        Toast.makeText(EditProfile.this, "Updated", Toast.LENGTH_SHORT).show();
+        startActivity(new Intent(getApplicationContext(),Home.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+        finish();
     }
 
     private boolean validate() {
 
         businessName = etBusinessName.getText().toString().trim();
         businessPhone = etPhone.getText().toString().trim();
-        sixKgPrice = etSixKgPrice.getText().toString().trim();
-        sixKgWithCylinderPrice = etSixKgWithCylinderPrice.getText().toString().trim();
-        thirteenKgPrice = etThirteenKgPrice.getText().toString().trim();
-        thirteenKgWithCylinderPrice = etThirteenKgWithCylinderPrice.getText().toString().trim();
+        businessPrices = etBusinessPrices.getText().toString().trim();
 
         if (TextUtils.isEmpty(businessName))
         {
@@ -246,27 +230,12 @@ public class EditProfile extends AppCompatActivity {
         }
         else if (TextUtils.isEmpty(businessPhone))
         {
-            etSixKgPrice.setError("Please enter valid phone number");
+            etPhone.setError("Please enter valid phone number");
             return false;
         }
-        else if (TextUtils.isEmpty(sixKgPrice))
+        else if (TextUtils.isEmpty(businessPrices))
         {
-            etSixKgPrice.setError("Please enter a price for this product");
-            return false;
-        }
-        else if (TextUtils.isEmpty(sixKgWithCylinderPrice))
-        {
-            etSixKgWithCylinderPrice.setError("Please enter a price for this product");
-            return false;
-        }
-        else if (TextUtils.isEmpty(thirteenKgPrice))
-        {
-            etThirteenKgPrice.setError("Please enter a price for this product");
-            return false;
-        }
-        else if (TextUtils.isEmpty(thirteenKgWithCylinderPrice))
-        {
-            etThirteenKgWithCylinderPrice.setError("Please enter a price for this product");
+            etBusinessPrices.setError("Please enter your business prices");
             return false;
         }
 

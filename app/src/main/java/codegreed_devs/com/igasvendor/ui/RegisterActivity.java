@@ -49,12 +49,12 @@ public class RegisterActivity extends AppCompatActivity {
 
     private static final String TAG = "RegisterActivity";
     private ProgressBar registeringBusiness;
-    private EditText etBusinessName, etBusinessEmail, etPhone, etPassword, etSixKgPrice, etThirteenKgPrice, etSixKgWithCylinderPrice, etThirteenKgWithCylinderPrice;
+    private EditText etBusinessName, etBusinessEmail, etPhone, etPassword;
     private CheckBox togglePassword;
     private CheckBox termsAndCondiditions;
     private Button btnRegister, btnLocation;
     private TextView tvSignIn;
-    private String businessName, businessEmail, businessPhone, password, sixKgPrice, sixKgWithCylinderPrice, thirteenKgPrice, thirteenKgWithCylinderPrice;
+    private String businessName, businessEmail, businessPhone, password;
     private Location businesslocation;
     private FirebaseAuth mAuth;
     private FusedLocationProviderClient mFusedLocationClient;
@@ -84,10 +84,6 @@ public class RegisterActivity extends AppCompatActivity {
         etPhone = findViewById(R.id.phone_number);
         etPassword = findViewById(R.id.reg_password);
         togglePassword = (CheckBox)findViewById(R.id.toggle_password);
-        etSixKgPrice = findViewById(R.id.six_kg_price);
-        etSixKgWithCylinderPrice = findViewById(R.id.complete_six_kg_price);
-        etThirteenKgPrice = findViewById(R.id.thirteen_kg_price);
-        etThirteenKgWithCylinderPrice = findViewById(R.id.complete_thirteen_kg_price);
         termsAndCondiditions = findViewById(R.id.checkboxTerms);
         btnRegister = findViewById(R.id.btn_register);
         btnLocation = findViewById(R.id.fetch_location);
@@ -199,31 +195,11 @@ public class RegisterActivity extends AppCompatActivity {
                                             }
                                         });
                                     }
-                                } else if (task.getException() != null){
-                                    Log.e("DATABASE ERROR", task.getException().getMessage());
-                                }
-                            }
-                        });
-
-                        Map<String, String> priceDetails = new HashMap<String, String>();
-
-                        priceDetails.put("six_kg", sixKgPrice);
-                        priceDetails.put("complete_six_kg", sixKgWithCylinderPrice);
-                        priceDetails.put("thirteen_kg", thirteenKgPrice);
-                        priceDetails.put("complete_thirteen_kg", thirteenKgWithCylinderPrice);
-
-                        mDatabaseReference.child("vendors").child(user.getUid()).child("business_prices").setValue(priceDetails).addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful())
-                                {
                                     registeringBusiness.setVisibility(View.GONE);
                                     Toast.makeText(RegisterActivity.this, "Registration Successful.Now Login", Toast.LENGTH_SHORT).show();
                                     startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
                                     finish();
-                                }
-                                else if (task.getException() != null)
-                                {
+                                } else if (task.getException() != null){
                                     Log.e("DATABASE ERROR", task.getException().getMessage());
                                 }
                             }
@@ -277,14 +253,6 @@ public class RegisterActivity extends AppCompatActivity {
             etPassword.setError("Password must be more than 6 characters!");
             registeringBusiness.setVisibility(View.GONE);
             return false;
-        } else if(sixKgPrice.isEmpty()){
-            etSixKgPrice.setError("Please enter a price for this product");
-        } else if(sixKgWithCylinderPrice.isEmpty()){
-            etSixKgWithCylinderPrice.setError("Please enter a price for this product");
-        } else if(thirteenKgPrice.isEmpty()){
-            etThirteenKgPrice.setError("Please enter a price for this product");
-        } else if(thirteenKgWithCylinderPrice.isEmpty()){
-            etThirteenKgWithCylinderPrice.setError("Please enter a price for this product");
         }
         return true;
     }
@@ -294,10 +262,6 @@ public class RegisterActivity extends AppCompatActivity {
         businessEmail = etBusinessEmail.getText().toString().trim();
         businessPhone = etPhone.getText().toString().trim();
         password = etPassword.getText().toString().trim();
-        sixKgPrice = etSixKgPrice.getText().toString().trim();
-        sixKgWithCylinderPrice = etSixKgWithCylinderPrice.getText().toString().trim();
-        thirteenKgPrice = etThirteenKgPrice.getText().toString().trim();
-        thirteenKgWithCylinderPrice = etThirteenKgWithCylinderPrice.getText().toString().trim();
     }
 
     private void getBusinessLocation() {

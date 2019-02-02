@@ -175,17 +175,12 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                String complete_six_kg = dataSnapshot.child("complete_six_kg").getValue(String.class);
-                String complete_thirteen_kg = dataSnapshot.child("complete_thirteen_kg").getValue(String.class);
-                String six_kg = dataSnapshot.child("six_kg").getValue(String.class);
-                String thirteen_kg = dataSnapshot.child("thirteen_kg").getValue(String.class);
+                String bussiness_prices = dataSnapshot.getValue(String.class);
 
-                if (thirteen_kg != null)
+                if (bussiness_prices != null)
                 {
-                    Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_COMPLETE_SIX_KG_PRICE, complete_six_kg);
-                    Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_COMPLETE_THIRTEEN_KG_PRICE, complete_thirteen_kg);
-                    Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_SIX_KG_PRICE, six_kg);
-                    Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_THIRTEEN_KG_PRICE, thirteen_kg);
+                    Utils.setPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_PRICES, bussiness_prices);
+                    Utils.setPrefBoolean(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_PRICES_SET, true);
                 }
 
             }

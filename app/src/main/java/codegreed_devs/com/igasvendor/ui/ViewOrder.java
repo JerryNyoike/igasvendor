@@ -3,20 +3,18 @@ package codegreed_devs.com.igasvendor.ui;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.telephony.SmsManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
@@ -37,13 +35,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
-import com.squareup.okhttp.FormEncodingBuilder;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Protocol;
 import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
 
 import org.json.JSONException;
@@ -51,8 +44,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 
 import codegreed_devs.com.igasvendor.R;
 import codegreed_devs.com.igasvendor.utils.Constants;
@@ -424,8 +415,7 @@ public class ViewOrder extends AppCompatActivity {
 
         String message = "Hello ";
         message += clientName;
-        message += ". Your payment of Ksh. ";
-        message += paidAmount;
+        message += ". Your payment of Ksh. *ENTER AMOUNT HERE!!*";
         message += " has been received.\n\n";
         message += "Here is a breakdown : \n";
         message += "Gas Brand : " + gasBrand + "\n";
@@ -438,83 +428,52 @@ public class ViewOrder extends AppCompatActivity {
         message += " and iGas.\n";
         message += "We do look forward to carrying out more transaction with you our esteemed client.";
 
-        RequestBody requestBody = new FormEncodingBuilder()
-                .add("email", clientEmail)
-                .add("subject", getResources().getString(R.string.payment_confirmation))
-                .add("message", message)
-                .build();
+        if (clientPhone != null && TextUtils.isDigitsOnly(clientPhone))
+        {
+            if (checkSmsPermission())
+                sendTextMessage();
+        }
+        else if (clientEmail != null)
+        {
+            finishTransaction();
+            Intent sendEmail = new Intent(Intent.ACTION_SEND);
+            sendEmail.setDataAndType(Uri.parse("email"),"message/rfc822");
+            sendEmail.putExtra(Intent.EXTRA_EMAIL, new String[]{clientEmail});
+            sendEmail.putExtra(Intent.EXTRA_SUBJECT, "Payment Confirmation");
+            sendEmail.putExtra(Intent.EXTRA_TEXT, message);
+            startActivity(Intent.createChooser(sendEmail, "Send with..."));
+        }
 
-        post(requestBody, new Callback() {
-            @Override
-            public void onFailure(Request request, final IOException e) {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        loadAction.dismiss();
-                        submit.setEnabled(true);
-                        Toast.makeText(ViewOrder.this, "Something went wrong", Toast.LENGTH_SHORT).show();
-                        Log.e("OKHTTP ERROR", e.getMessage());
-                    }
-                });
-            }
-
-            @Override
-            public void onResponse(Response response) throws IOException {
-
-                int responseCode = response.code();
-                Log.e("HTTP RESPONSE CODE", String.valueOf(responseCode));
-
-                if (responseCode == Constants.HTTP_RESPONSE_OK)
-                {
-                    String serverResponse = response.body().string();
-                    Log.e("Response", serverResponse);
-                    try
-                    {
-                        JSONObject jsonObject = new JSONObject(serverResponse);
-
-                        String success_state = jsonObject.getString("success_state");
-
-                        if (success_state != null && success_state.equals("1"))
-                        {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    finishTransaction();
-                                }
-                            });
-                        }
-                        else
-                        {
-                            Toast.makeText(ViewOrder.this, "Something went wrong", Toast.LENGTH_SHORT).show();
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-                else
-                {
-                    loadAction.dismiss();
-                    Toast.makeText(ViewOrder.this, "Something went wrong", Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });
     }
 
-    //carry out a http post request
-    private void post(RequestBody requestBody, Callback callback){
+    private void sendTextMessage(){
+        String message = "Hello ";
+        message += clientName;
+        message += ". Your payment of Ksh. *ENTER AMOUNT HERE!!*";
+        message += " has been received.\n\n";
+        message += "Here is a breakdown : \n";
+        message += "Gas Brand : " + gasBrand + "\n";
+        message += "Cylinder size : " + cylinderSize + "\n";
+        message += "Gas Type : " + gasType + "\n";
+        message += "Number of cylinders : " + noOfCylinders + "\n";
+        message += "Amount paid : Ksh. " + paidAmount + "\n\n";
+        message += "Thank you on behalf of ";
+        message += Utils.getPrefString(getApplicationContext(), Constants.SHARED_PREF_NAME_BUSINESS_NAME);
+        message += " and iGas.\n";
+        message += "We do look forward to carrying out more transaction with you our esteemed client.";
+        SmsManager.getDefault().sendTextMessage(clientPhone, null, message, null, null);
+        finishTransaction();
+    }
 
-        OkHttpClient okHttpClient = new OkHttpClient();
-        okHttpClient.setProtocols(Collections.singletonList(Protocol.HTTP_1_1));
-
-        Request request = new Request.Builder()
-                .url(Constants.CONFIRM_EMAIL_URL)
-                .post(requestBody)
-                .build();
-
-        Call call = okHttpClient.newCall(request);
-        call.enqueue(callback);
-
+    private boolean checkSmsPermission(){
+        int sms_permission = ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.SEND_SMS);
+        if (sms_permission != PackageManager.PERMISSION_GRANTED)
+        {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.SEND_SMS},
+                            Constants.SMS_PERMISSION_REQUEST_CODE);
+            return false;
+        }
+        return true;
     }
 
     //set order status to finished in db
@@ -528,7 +487,7 @@ public class ViewOrder extends AppCompatActivity {
                         if(task.isSuccessful())
                         {
                             //inform vendor to check the history where they can view finished orders
-                            Snackbar mySnackbar = Snackbar.make(coordinatorLayout, "Receipt sent to client's email.\nCheck your history page to view finished orders.", Snackbar.LENGTH_LONG);
+                            Snackbar mySnackbar = Snackbar.make(coordinatorLayout, "Check your history page to view finished orders.", Snackbar.LENGTH_LONG);
                             mySnackbar.setAction("Go", new HistoryListener());
                             mySnackbar.show();
                         }
@@ -564,6 +523,10 @@ public class ViewOrder extends AppCompatActivity {
         if (requestCode == Constants.CALL_PHONE_PERMISSION_REQUEST_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED)
         {
             callClient();
+        }
+        else if (requestCode == Constants.SMS_PERMISSION_REQUEST_CODE && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+        {
+            sendTextMessage();
         }
 
     }
